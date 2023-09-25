@@ -6,11 +6,11 @@
 #include "scene_util.h"
 
 // A sphere is an implicit surface
-scene_object create_sphere(point3 center, double radius, material_enum material, color color, double metal_fuzz, double refraction_index) {
+scene_object create_sphere(point3 center, double radius, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
 	scene_object sphere;
 
 	// Geometry properties
-	sphere.geometry_type = SPHERE;
+	sphere.object_type = SPHERE;
 	sphere.center = center;
 	sphere.radius = radius;
 
@@ -19,17 +19,18 @@ scene_object create_sphere(point3 center, double radius, material_enum material,
 	sphere.material_color = color;
 	sphere.metal_fuzz = metal_fuzz;
 	sphere.refraction_index = refraction_index;
+	sphere.shininess = shininess;
 
 	return sphere;
 }
 
 // A cube is defined by 12 triangles
 // Front face towards camera
-scene_object create_cube(point3 center, double size, material_enum material, color color, double metal_fuzz, double refraction_index) {
+scene_object create_cube(point3 center, double size, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
 	scene_object cube;
 
 	// Geometric properties
-	cube.geometry_type = CUBE;
+	cube.object_type = CUBE;
 
 	double half = size * 0.5;
 
@@ -76,8 +77,19 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	cube.material_color = color;
 	cube.metal_fuzz = metal_fuzz;
 	cube.refraction_index = refraction_index;
+	cube.shininess = shininess;
 
 	return cube;
+}
+
+scene_object create_point_light(point3 position, color color) {
+	scene_object point_light;
+
+	point_light.object_type = LIGHT;
+	point_light.light_position = position;
+	point_light.light_color = color;
+
+	return point_light;
 }
 
 // To set face normal for spheres
@@ -222,7 +234,7 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 	for (size_t i = 0; i < nr_scene_objects; i++) {
 		const scene_object& obj = scene_objects[i];
 
-		switch (obj.geometry_type) {
+		switch (obj.object_type) {
 		case SPHERE:
 			if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
 				hit_anyting = true;

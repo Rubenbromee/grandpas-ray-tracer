@@ -41,6 +41,11 @@ void add_dielectric_cube_to_scene(std::vector<scene_object>& scene_objects, poin
 	scene_objects.push_back(inner_cube);
 }
 
+void add_point_light_to_scene(std::vector<scene_object>& scene_objects, point3 position, color color) {
+	scene_object point_light = create_point_light(position, color);
+	scene_objects.push_back(point_light);
+}
+
 // Utility functions to create different scenes
 
 // Grey lambertian cube, dielectric sphere, yellow metal sphere and a blue lambertian sphere
@@ -90,9 +95,20 @@ void create_scene_5(std::vector<scene_object>& scene_objects) {
 	add_metal_sphere_to_scene(scene_objects, point3(1.0, 0.0, -1.0), 0.5, color(0.8, 0.6, 0.2), 0.0);
 }
 
+// Test scene for lighting, shadow tests inside a large box
+void create_scene_6(std::vector<scene_object>& scene_objects) {
+	add_lambertian_cube_to_scene(scene_objects, point3(0.0, 10.0, 0.0), 10.0, color(1.0, 1.0, 1.0));
+	add_lambertian_cube_to_scene(scene_objects, point3(0.0, -10.0, 0.0), 10.0, color(1.0, 1.0, 1.0));
+	add_lambertian_cube_to_scene(scene_objects, point3(-10.0, 0.0, 0.0), 10.0, color(1.0, 1.0, 1.0));
+	add_lambertian_cube_to_scene(scene_objects, point3(10.0, 0.0, 0.0), 10.0, color(1.0, 1.0, 1.0));
+	add_lambertian_cube_to_scene(scene_objects, point3(0.0, 0.0, -10.0), 10.0, color(1.0, 1.0, 1.0));
+	add_lambertian_sphere_to_scene(scene_objects, point3(0.0, 0.0, -1.0), 0.5, color(1.0, 0.0, 0.0));
+	add_point_light_to_scene(scene_objects, point3(0.0, 1.0, -1.0), color(1.0, 1.0, 1.0));
+}
+
 // Populate scene with geometries
 std::vector<scene_object> create_scene_objects() {
 	std::vector<scene_object> scene_objects = std::vector<scene_object>();
-	create_scene_3(scene_objects);
+	create_scene_6(scene_objects);
 	return scene_objects;
 }

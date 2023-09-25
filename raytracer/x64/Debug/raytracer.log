@@ -1,16 +1,97 @@
 ﻿  camera.cpp
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(15,142): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(15,142): error C2143: syntax error: missing ',' before '&'
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(17,147): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(17,147): error C2143: syntax error: missing ',' before '&'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.cpp(140,8): error C2660: 'metallic_reflection': function does not take 8 arguments
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(15,6): message : see declaration of 'metallic_reflection'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.cpp(140,8): message : while trying to match the argument list '(const ray, hit_record, color, ray, double, const camera, double, color)'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.cpp(145,8): error C2660: 'dielectric_refraction': function does not take 8 arguments
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(17,6): message : see declaration of 'dielectric_refraction'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.cpp(145,8): message : while trying to match the argument list '(const ray, hit_record, color, ray, double, const camera, double, color)'
+  color.cpp
   create_image.cpp
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,62): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,55): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,62): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,55): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,110): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,103): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,110): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,103): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,159): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,152): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,159): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,152): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
   geometry.cpp
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,62): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,55): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,62): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,55): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,110): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,103): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,110): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,103): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,159): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,152): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,159): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,152): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
   main.cpp
-C:\git repos\raytracer\raytracer\main.cpp(16,12): warning C4244: 'initializing': conversion from '_Rep' to 'int', possible loss of data
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(15,142): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(15,142): error C2143: syntax error: missing ',' before '&'
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(17,147): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\git repos\grandpas-ray-tracer\raytracer\material.h(17,147): error C2143: syntax error: missing ',' before '&'
+C:\git repos\grandpas-ray-tracer\raytracer\main.cpp(16,12): warning C4244: 'initializing': conversion from '_Rep' to 'int', possible loss of data
           with
           [
               _Rep=__int64
           ]
   material.cpp
+C:\git repos\grandpas-ray-tracer\raytracer\geometry.h(13,16): error C3646: 'material': unknown override specifier
+C:\git repos\grandpas-ray-tracer\raytracer\geometry.h(13,24): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\git repos\grandpas-ray-tracer\raytracer\geometry.h(44,16): error C3646: 'material': unknown override specifier
+C:\git repos\grandpas-ray-tracer\raytracer\geometry.h(44,24): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+C:\git repos\grandpas-ray-tracer\raytracer\geometry.h(59,58): error C2061: syntax error: identifier 'material_enum'
+C:\git repos\grandpas-ray-tracer\raytracer\geometry.h(60,54): error C2061: syntax error: identifier 'material_enum'
+  ray.cpp
   scene_util.cpp
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,62): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,55): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,62): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,55): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,110): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,103): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,110): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,103): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,159): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,152): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,159): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,152): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
   util.cpp
-C:\git repos\raytracer\raytracer\util.cpp(22,17): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,62): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,55): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,62): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,55): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,110): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,103): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,110): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,103): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,159): error C2065: 'scene_object': undeclared identifier
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,152): error C2923: 'std::vector': 'scene_object' is not a valid template type argument for parameter '_Ty'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,159): message : see declaration of 'scene_object'
+C:\git repos\grandpas-ray-tracer\raytracer\camera.h(32,152): error C2976: 'std::vector': too few template arguments
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.37.32822\include\vector(438,1): message : see declaration of 'std::vector'
+C:\git repos\grandpas-ray-tracer\raytracer\util.cpp(22,17): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
   Generating Code...
-C:\git repos\raytracer\raytracer\camera.cpp(94): warning C4172: returning address of local variable or temporary
-  raytracer.vcxproj -> C:\git repos\raytracer\raytracer\x64\Debug\raytracer.exe
+C:\git repos\grandpas-ray-tracer\raytracer\ray.cpp(15): warning C4172: returning address of local variable or temporary

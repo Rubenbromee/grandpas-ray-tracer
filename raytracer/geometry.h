@@ -13,6 +13,7 @@ struct hit_record {
 	material_enum material;
 	color material_color;
 	double metal_fuzz;
+	double shininess;
 	double refraction_index;
 	double time;
 	bool outward_face;
@@ -24,20 +25,26 @@ struct triangle {
 	glm::dvec3 normal;
 };
 
-enum geometry_enum {
+enum object_enum {
 	SPHERE,
-	CUBE
+	CUBE,
+	LIGHT
 };
 
 // Union type for all scene objects :)
 struct scene_object {
-	// Enum to determine intersection function
-	geometry_enum geometry_type;
+	// Enum to determine object type
+	object_enum object_type;
+
+	// Light fields, point light
+	point3 light_position;
+	color light_color;
 
 	// Material properties, defaults to grey lambertian geometry
 	material_enum material;
 	color material_color;
 	double metal_fuzz;
+	double shininess;
 	double refraction_index;
 
 	// Sphere fields, implicit surface
@@ -49,8 +56,10 @@ struct scene_object {
 	triangle cube_triangles[12];
 };
 
-scene_object create_sphere(point3 center, double radius, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
-scene_object create_cube(point3 center, double size, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0); // Cubes are symmetrical and have no rotation
+scene_object create_sphere(point3 center, double radius, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0);
+scene_object create_cube(point3 center, double size, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0); // Cubes are symmetrical and have no rotation
+
+scene_object create_point_light(point3 position, color color);
 
 void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_record& rec);
 bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& sphere);
