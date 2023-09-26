@@ -5,6 +5,42 @@
 #include "material.h"
 #include "scene_util.h"
 
+// A quad is just made up of two triangles
+scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
+	scene_object quad;
+	quad.object_type = QUAD;
+
+	quad.material = material;
+	quad.material_color = color;
+	quad.metal_fuzz = metal_fuzz;
+	quad.refraction_index = refraction_index;
+	quad.shininess = shininess;
+
+	// Define the vertices of the quad
+	triangle triangles[2];
+
+	// First triangle (top-left, top-right, bottom-right)
+	triangles[0].vertices[0] = top_right;
+	triangles[0].vertices[1] = top_left;
+	triangles[0].vertices[2] = bottom_left;
+
+	// Second triangle (top-left, bottom-right, bottom-left)
+	triangles[1].vertices[0] = top_right;
+	triangles[1].vertices[1] = bottom_left;
+	triangles[1].vertices[2] = bottom_right;
+
+	// Calculate the normals for the triangles with the given vertex order
+	triangles[0].normal = glm::normalize(glm::cross(triangles[0].vertices[2] - triangles[0].vertices[1], triangles[0].vertices[0] - triangles[0].vertices[1]));
+	triangles[1].normal = glm::normalize(glm::cross(triangles[1].vertices[0] - triangles[1].vertices[2], triangles[1].vertices[1] - triangles[1].vertices[2]));
+
+	// Assign the triangles to the quad
+	for (size_t i = 0; i < 2; i++) {
+		quad.quad_triangles[i] = triangles[i];
+	}
+
+	return quad;
+}
+
 // A sphere is an implicit surface
 scene_object create_sphere(point3 center, double radius, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
 	scene_object sphere;
@@ -82,16 +118,6 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	return cube;
 }
 
-scene_object create_point_light(point3 position, color color) {
-	scene_object point_light;
-
-	point_light.object_type = LIGHT;
-	point_light.light_position = position;
-	point_light.light_color = color;
-
-	return point_light;
-}
-
 // To set face normal for spheres
 void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_record& rec) {
 	rec.outward_face = glm::dot(ray.direction, outward_normal) < 0;
@@ -100,8 +126,6 @@ void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_recor
 
 // Sphere intersection is calculated as intersection with an implicit surface
 bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& sphere) {
-
-	// Remove copies, nothing is being assigned
 	const glm::dvec3& ray_direction = ray.direction;
 	const glm::dvec3& ray_origin = ray.origin;
 
@@ -200,6 +224,16 @@ bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, c
 	return false;
 }
 
+bool quad_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& quad) {
+	for (size_t i = 0; i < quad.nr_quad_triangles; i++) {
+		const triangle& triangle = quad.quad_triangles[i];
+		if (triangle_intersection(ray, ray_time, rec, triangle)) {
+			return true;
+		}
+	}
+	return false;
+}
+
 // Iterate through all triangles in the cube and run intersection test
 bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& cube) {
 	bool hit_triangle = false;
@@ -220,6 +254,8 @@ void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record
 	temp_rec.material_color = obj.material_color;
 	temp_rec.metal_fuzz = obj.metal_fuzz;
 	temp_rec.refraction_index = obj.refraction_index;
+	temp_rec.shininess = obj.shininess;
+
 	rec = temp_rec;
 }
 
@@ -251,7 +287,15 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 				update_hit_record(temp_rec, obj, rec);
 			}
 			break;
+		case QUAD:
+			if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+				hit_anyting = true;
+				local_ray_time_interval.max = temp_rec.time;
+				update_hit_record(temp_rec, obj, rec);
+			}
+			break;
 		}
+
 	}
 
 	return hit_anyting;

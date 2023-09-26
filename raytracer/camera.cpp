@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <future>
+#include <vector>
 #include "camera.h"
 #include "color.h"
 #include "util.h"
@@ -95,7 +96,7 @@ const ray& get_multisample_ray(int i, int j, const camera& camera) {
 }
 
 // Calculate color for current ray
-color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& scene_objects, const std::vector<scene_object>& shadow_objects, const std::vector<scene_object>& lights, const camera& camera) {
+color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& scene_objects, const color& background_color) {
 	hit_record rec;
 	interval initial_ray_time_interval = { 0.001, infinity };
 
@@ -104,56 +105,70 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 		return color(0.0, 0.0, 0.0);
 	}
 
-	// Loop through all scene objects to find intersection for current ray
-	if (find_intersection(ray_in, initial_ray_time_interval, rec, scene_objects)) {
-		ray scattered_ray;
-		color attenuation;
-
-		// Check for shadow ray intersections
-		hit_record shadow_rec;
-		color average_light_color = color(0.0, 0.0, 0.0);
-		unsigned int nr_illuminations = 0;
-		for (auto light : lights) {
-			ray shadow_ray = create_ray(rec.point, light.light_position - rec.point);
-			
-			// If the shadow ray intersects, the point is in shadow and should contribute less to the pixel color
-			if (find_intersection(shadow_ray, interval{ 0.001, infinity }, shadow_rec, shadow_objects)) {
-				rec.material_color *= 0.2;
-			}
-			else {
-				// @TODO: Bias each color depending on the angle to the light source
-				// The point is directly illuminated by the light
-				average_light_color += light.light_color;
-				nr_illuminations++;
-			}
-		}
-
-		average_light_color /= nr_illuminations;
-
-		switch (rec.material) {
-		case LAMBERTIAN:
-			if (lambertian_scatter(ray_in, rec, attenuation, scattered_ray, average_light_color)) {
-				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, shadow_objects, lights, camera);
-			}
-			break;
-		case METAL:
-			if (metallic_reflection(ray_in, rec, attenuation, scattered_ray, rec.metal_fuzz, camera, rec.shininess, average_light_color)) {
-				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, shadow_objects, lights, camera);
-			}
-			break;
-		case DIELECTRIC:
-			if (dielectric_refraction(ray_in, rec, attenuation, scattered_ray, rec.refraction_index, camera, rec.shininess, average_light_color)) {
-				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, shadow_objects, lights, camera);
-			}
-		}
-
-		return color(0.0, 0.0, 0.0);
+	// If no intersection is found, return background color
+	if (!find_intersection(ray_in, initial_ray_time_interval, rec, scene_objects)) {
+		return background_color;
 	}
 
+	ray scattered_ray;
+	color attenuation;
+
+	switch (rec.material) {
+	case LAMBERTIAN:
+		if (lambertian_scatter(ray_in, rec, attenuation, scattered_ray)) {
+			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color);
+		}
+		break;
+	case METAL:
+		if (metallic_reflection(ray_in, rec, attenuation, scattered_ray, rec.metal_fuzz)) {
+			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color);
+		}
+		break;
+	case DIELECTRIC:
+		if (dielectric_refraction(ray_in, rec, attenuation, scattered_ray, rec.refraction_index)) {
+			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color);
+		}
+	case LIGHT:
+		return rec.material_color + attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color);
+	}
+
+	// Loop through all scene objects to find intersection for current ray
+	//if (find_intersection(ray_in, initial_ray_time_interval, rec, scene_objects)) {
+
+
+	//	// Check for shadow ray intersections
+	//	hit_record shadow_rec;
+	//	color average_light_color = color(0.0, 0.0, 0.0);
+	//	unsigned int nr_illuminations = 0;
+	//	for (const scene_object& light : lights) {
+	//		ray shadow_ray = create_ray(rec.point, light.light_position - rec.point);
+	//		double shadow_ray_length = glm::distance(light.light_position, rec.point);
+	//		
+	//		// If the shadow ray intersects, the point is in shadow and should contribute less to the pixel color
+	//		if (find_intersection(shadow_ray, interval{ 0.001, shadow_ray_length * 1.05 }, shadow_rec, shadow_objects)) {
+	//			rec.material_color *= 0.2;
+	//		}
+	//		else {
+	//			// @TODO: Bias each color depending on the angle to the light source
+	//			// The point is directly illuminated by the light
+	//			average_light_color += light.light_color;
+	//			nr_illuminations++;
+	//		}
+	//	}
+
+	//	if (nr_illuminations > 0) {
+	//		average_light_color /= static_cast<double>(nr_illuminations);
+	//	}
+
+
+
+	//	return color(0.0, 0.0, 0.0);
+	//}
+
 	// Paint "sky" background
-	glm::dvec3 unit_direction = glm::normalize(ray_in.direction);
-	auto a = 0.5 * (unit_direction.y + 1.0);
-	return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
+	//glm::dvec3 unit_direction = glm::normalize(ray_in.direction);
+	//auto a = 0.5 * (unit_direction.y + 1.0);
+	//return (1.0 - a) * color(1.0, 1.0, 1.0) + a * color(0.5, 0.7, 1.0);
 }
 
 void render(camera& camera) {
@@ -162,29 +177,38 @@ void render(camera& camera) {
 	std::ofstream output("output.ppm"); // Initialize output stream to ppm file
 
 	std::vector<scene_object> scene_objects = create_scene_objects(); // Create scene objects
-	std::vector<scene_object> shadow_objects = scene_objects; // Scene objects that cast a shadow
-	std::vector<scene_object> lights = scene_objects;
+	color background_color = color(0.0, 0.0, 0.0);
+	//std::vector<scene_object> shadow_objects = scene_objects; // Scene objects that cast a shadow
+	//std::vector<scene_object> lights = scene_objects;
 
-	// Remove dielectric objects from shadow calculations since they don't cast a shadow
-	// Reflections are handled elsewhere so dielectrics can still have specularity
-	for (auto it = shadow_objects.begin(); it != shadow_objects.end();) {
-		if (it->material == DIELECTRIC) {
-			it = shadow_objects.erase(it);
-		}
-		else {
-			++it;
-		}
-	}
+	//std::cout << "Scene objects: " << scene_objects.size() << std::endl;
+	//std::cout << "Shadow objects: " << shadow_objects.size() << std::endl;
+	//std::cout << "Lights: " << lights.size() << std::endl;
 
-	// Remove all non-light scene objects from lights vector
-	for (auto it = lights.begin(); it != lights.end();) {
-		if (it->material != LIGHT) {
-			it = lights.erase(it);
-		}
-		else {
-			++it;
-		}
-	}
+	//// Remove dielectric objects from shadow calculations since they don't cast a shadow
+	//// Reflections are handled elsewhere so dielectrics can still have specularity
+	//for (auto it = shadow_objects.begin(); it != shadow_objects.end();) {
+	//	if (it->material == DIELECTRIC) {
+	//		it = shadow_objects.erase(it);
+	//	}
+	//	else {
+	//		++it;
+	//	}
+	//}
+
+	//// Remove all non-light scene objects from lights vector
+	//for (auto it = lights.begin(); it != lights.end();) {
+	//	if (it->object_type != LIGHT) {
+	//		it = lights.erase(it);
+	//	}
+	//	else {
+	//		++it;
+	//	}
+	//}
+
+	//std::cout << "Scene objects: " << scene_objects.size() << std::endl;
+	//std::cout << "Shadow objects: " << shadow_objects.size() << std::endl;
+	//std::cout << "Lights: " << lights.size() << std::endl;
 
 	output << "P3\n" << camera.image_width << ' ' << camera.image_height << "\n255\n"; // Define file format
 
@@ -204,7 +228,7 @@ void render(camera& camera) {
 				// Multi-sample a pixel
 				for (size_t sample = 0; sample < camera.samples_per_pixel; sample++) {
 					const ray& ray = get_multisample_ray(i, j, camera);
-					pixel_colors[i][j] += ray_color(ray, camera.max_depth, scene_objects, shadow_objects, lights, camera);
+					pixel_colors[i][j] += ray_color(ray, camera.max_depth, scene_objects, background_color);
 				}
 			}));
 		}

@@ -23,12 +23,22 @@ struct hit_record {
 struct triangle {
 	glm::dvec3 vertices[3];
 	glm::dvec3 normal;
+
+	triangle& operator=(const triangle& right) {
+		if (this != &right) {
+			for (int i = 0; i < 3; i++) {
+				vertices[i] = right.vertices[i];
+			}
+			normal = right.normal;
+		}
+		return *this;
+	}
 };
 
 enum object_enum {
 	SPHERE,
 	CUBE,
-	LIGHT
+	QUAD,
 };
 
 // Union type for all scene objects :)
@@ -36,9 +46,8 @@ struct scene_object {
 	// Enum to determine object type
 	object_enum object_type;
 
-	// Light fields, point light
-	point3 light_position;
-	color light_color;
+	// Light fields, diffuse light
+	color diffuse_light_color;
 
 	// Material properties, defaults to grey lambertian geometry
 	material_enum material;
@@ -47,23 +56,47 @@ struct scene_object {
 	double shininess;
 	double refraction_index;
 
+	// Quad fields, polygon surface
+	size_t nr_quad_triangles = 2;
+	triangle quad_triangles[2];
+
 	// Sphere fields, implicit surface
 	glm::dvec3 center;
 	double radius;
 
 	// Cube fields, polygon surface
-	const size_t nr_cube_triangles = 12;
+	size_t nr_cube_triangles = 12;
 	triangle cube_triangles[12];
+
+	scene_object& operator=(const scene_object& right) {
+		if (this != &right) {
+			object_type = right.object_type;
+			diffuse_light_color = right.diffuse_light_color;
+			material = right.material;
+			material_color = right.material_color;
+			metal_fuzz = right.metal_fuzz;
+			shininess = right.shininess;
+			refraction_index = right.refraction_index;
+			center = right.center;
+			radius = right.radius;
+			nr_cube_triangles = right.nr_cube_triangles;
+			for (int i = 0; i < 12; i++) {
+				cube_triangles[i] = right.cube_triangles[i];
+			}
+		}
+		return *this;
+	}
 };
 
+scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0);
 scene_object create_sphere(point3 center, double radius, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0);
 scene_object create_cube(point3 center, double size, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0); // Cubes are symmetrical and have no rotation
 
-scene_object create_point_light(point3 position, color color);
 
 void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_record& rec);
 bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& sphere);
 bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, const triangle& triangle);
+bool quad_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& quad);
 bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& cube);
 
 void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record& rec);

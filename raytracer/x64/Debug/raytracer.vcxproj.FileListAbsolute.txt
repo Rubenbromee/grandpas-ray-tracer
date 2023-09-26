@@ -1,1 +1,2 @@
 C:\git repos\raytracer\raytracer\x64\Debug\raytracer.exe
+C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\raytracer.exe

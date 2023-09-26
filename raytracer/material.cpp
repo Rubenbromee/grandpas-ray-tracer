@@ -3,8 +3,14 @@
 #include "glm.hpp"
 #include "util.h"
 #include "geometry.h"
+#include "camera.h"
 
-bool lambertian_scatter(const ray& ray_in, const hit_record& rec, color& attenuation, ray& scattered_ray, const color& light_color) {
+bool light_emission(const ray& ray_in, const hit_record& rec, color& attenuation) {
+	attenuation = rec.material_color;
+	return false;
+}
+
+bool lambertian_scatter(const ray& ray_in, const hit_record& rec, color& attenuation, ray& scattered_ray) {
 	glm::dvec3 scattered_ray_direction = rec.normal + random_hemispherical_direction(rec.normal);
 
 	// To avoid zero vector as scatter direction if random direction vector is opposite normal
@@ -14,13 +20,8 @@ bool lambertian_scatter(const ray& ray_in, const hit_record& rec, color& attenua
 
 	scattered_ray = create_ray(rec.point, scattered_ray_direction);
 
-	if (light_color != color(0.0, 0.0, 0.0)) {
-		attenuation = (rec.material_color + light_color) / 2.0;
-	}
-	else {
-		attenuation = rec.material_color;
-	}
-	
+	attenuation = rec.material_color;
+
 	return true;
 }
 
@@ -51,13 +52,10 @@ void calculate_specular_spot(const camera& camera, const hit_record& rec, double
 	}
 }
 
-bool metallic_reflection(const ray& ray_in, const hit_record& rec, color& attenuation, ray& reflected_ray, double metallic_fuzz, const camera& camera, double shininess, const color& light_color) {
+bool metallic_reflection(const ray& ray_in, const hit_record& rec, color& attenuation, ray& reflected_ray, double metallic_fuzz) {
 	// Calculate trajectory for reflected ray
 	glm::dvec3 reflected_ray_direction = reflect(glm::normalize(ray_in.direction), rec.normal);
 	reflected_ray = create_ray(rec.point, reflected_ray_direction + (metallic_fuzz * random_hemispherical_direction(rec.normal)));
-	
-	calculate_specular_spot(camera, rec, shininess, light_color, attenuation, rec.material_color);
-
 	return (glm::dot(reflected_ray.direction, rec.normal) > 0.0); // Absorb rays that reflect below the surface of the object
 }
 
@@ -68,7 +66,7 @@ double reflectance(double cosine, double refraction_index) {
 	return r0 + (1.0 - r0) * std::pow((1 - cosine), 5);
 }
 
-bool dielectric_refraction(const ray& ray_in, const hit_record& rec, color& attenuation, ray& ray_out, double refraction_index, const camera& camera, double shininess, const color& light_color) {
+bool dielectric_refraction(const ray& ray_in, const hit_record& rec, color& attenuation, ray& ray_out, double refraction_index) {
 	attenuation = color(1.0, 1.0, 1.0);
 	double refraction_ratio = rec.outward_face ? (1.0 / refraction_index) : refraction_index; 
 	glm::dvec3 unit_direction = glm::normalize(ray_in.direction);
@@ -81,7 +79,6 @@ bool dielectric_refraction(const ray& ray_in, const hit_record& rec, color& atte
 	glm::dvec3 direction;
 
 	if (cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double()) {
-		calculate_specular_spot(camera, rec, shininess, light_color, attenuation, color(1.0, 1.0, 1.0));
 		direction = reflect(unit_direction, rec.normal);
 	}
 	else {

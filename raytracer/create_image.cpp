@@ -14,6 +14,9 @@ void create_image() {
 	cam.image_width = 600;
 	cam.samples_per_pixel = 100;
 	cam.max_depth = 10;
+	cam.look_from = point3(0.0, 0.0, -10.0);
+	cam.look_at = point3(0.0, 0.0, -20.0);
+
 
 	//cam.vertical_field_of_view = 20.0; // Zoom in
 
