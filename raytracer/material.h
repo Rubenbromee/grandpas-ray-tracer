@@ -9,7 +9,6 @@ enum material_enum {
 	LIGHT
 };
 
-struct camera;
 struct hit_record; // To avoid circular dependency between material.h and geometry.h
 
 bool lambertian_scatter(const ray& ray_in, const hit_record& rec, color& attenuation, ray& scattered_ray);

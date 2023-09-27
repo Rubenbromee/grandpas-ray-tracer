@@ -224,6 +224,7 @@ bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, c
 	return false;
 }
 
+// Iterate through all triangles in the quad and run triangle intersection test
 bool quad_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& quad) {
 	for (size_t i = 0; i < quad.nr_quad_triangles; i++) {
 		const triangle& triangle = quad.quad_triangles[i];
@@ -234,7 +235,7 @@ bool quad_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 	return false;
 }
 
-// Iterate through all triangles in the cube and run intersection test
+// Iterate through all triangles in the cube and run triangle intersection test
 bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& cube) {
 	bool hit_triangle = false;
 	for (size_t i = 0; i < cube.nr_cube_triangles; i++) {
@@ -274,7 +275,6 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 		case SPHERE:
 			if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
 				hit_anyting = true;
-				// closest_so_far = temp_rec.time;
 				local_ray_time_interval.max = temp_rec.time;
 				update_hit_record(temp_rec, obj, rec);
 			}
@@ -282,7 +282,6 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 		case CUBE:
 			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
 				hit_anyting = true;
-				//closest_so_far = temp_rec.time;
 				local_ray_time_interval.max = temp_rec.time;
 				update_hit_record(temp_rec, obj, rec);
 			}
