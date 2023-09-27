@@ -5,6 +5,13 @@
 #include "material.h"
 #include "scene_util.h"
 
+point3 calculate_triangle_center(const triangle& triangle) {
+	// Calculate the average of the vertices' coordinates
+	point3 center = (triangle.vertices[0] + triangle.vertices[1] + triangle.vertices[2]) / 3.0;
+
+	return center;
+}
+
 // A quad is just made up of two triangles
 scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
 	scene_object quad;
@@ -36,6 +43,52 @@ scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, 
 	// Assign the triangles to the quad
 	for (size_t i = 0; i < 2; i++) {
 		quad.quad_triangles[i] = triangles[i];
+		quad.quad_triangles[i].center = calculate_triangle_center(quad.quad_triangles[i]);
+	}
+
+	return quad;
+}
+
+scene_object create_quad(point3 center, double width, double height, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
+	scene_object quad;
+	quad.object_type = QUAD;
+
+	quad.material = material;
+	quad.material_color = color;
+	quad.metal_fuzz = metal_fuzz;
+	quad.refraction_index = refraction_index;
+	quad.shininess = shininess;
+
+	// Calculate half-width and half-height
+	double half_width = width * 0.5;
+	double half_height = height * 0.5;
+
+	// Define the vertices of the quad based on center, width, and height
+	point3 top_left = center + point3(-half_width, half_height, 0.0);
+	point3 top_right = center + point3(half_width, half_height, 0.0);
+	point3 bottom_left = center + point3(-half_width, -half_height, 0.0);
+	point3 bottom_right = center + point3(half_width, -half_height, 0.0);
+
+	triangle triangles[2];
+
+	// First triangle (top-left, top-right, bottom-right)
+	triangles[0].vertices[0] = top_right;
+	triangles[0].vertices[1] = top_left;
+	triangles[0].vertices[2] = bottom_left;
+
+	// Second triangle (top-left, bottom-right, bottom-left)
+	triangles[1].vertices[0] = top_right;
+	triangles[1].vertices[1] = bottom_left;
+	triangles[1].vertices[2] = bottom_right;
+
+	// Calculate the normals for the triangles with the given vertex order
+	triangles[0].normal = glm::normalize(glm::cross(triangles[0].vertices[2] - triangles[0].vertices[1], triangles[0].vertices[0] - triangles[0].vertices[1]));
+	triangles[1].normal = glm::normalize(glm::cross(triangles[1].vertices[0] - triangles[1].vertices[2], triangles[1].vertices[1] - triangles[1].vertices[2]));
+
+	// Assign the triangles to the quad
+	for (size_t i = 0; i < 2; i++) {
+		quad.quad_triangles[i] = triangles[i];
+		quad.quad_triangles[i].center = calculate_triangle_center(quad.quad_triangles[i]);
 	}
 
 	return quad;
@@ -59,6 +112,8 @@ scene_object create_sphere(point3 center, double radius, material_enum material,
 
 	return sphere;
 }
+
+
 
 // A cube is defined by 12 triangles
 // Front face towards camera
@@ -106,6 +161,7 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 		cube.cube_triangles[i].vertices[1] = v1;
 		cube.cube_triangles[i].vertices[2] = v2;
 		cube.cube_triangles[i].normal = normal;
+		cube.cube_triangles[i].center = calculate_triangle_center(cube.cube_triangles[i]);
 	}
 
 	// Material properties
@@ -116,6 +172,65 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	cube.shininess = shininess;
 
 	return cube;
+}
+
+scene_object create_asymmetric_cube(point3 center, double width, double height, double depth, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
+	scene_object asymmetric_cube;
+
+	// Geometric properties
+	asymmetric_cube.object_type = CUBE;
+
+	double half_width = width * 0.5;
+	double half_height = height * 0.5;
+	double half_depth = depth * 0.5;
+
+	// Define cube vertices
+	const glm::dvec3 vertices[] = {
+		// Front face
+		center + glm::dvec3(-half_width, -half_height, half_depth),   // Vertex 0 (Front bottom left)
+		center + glm::dvec3(half_width, -half_height, half_depth),    // Vertex 1 (Front bottom right)
+		center + glm::dvec3(-half_width, half_height, half_depth),    // Vertex 2 (Front top left)
+		center + glm::dvec3(half_width, half_height, half_depth),     // Vertex 3 (Front top right)
+
+		// Back face
+		center + glm::dvec3(-half_width, -half_height, -half_depth), // Vertex 4 (Back bottom left)
+		center + glm::dvec3(half_width, -half_height, -half_depth),  // Vertex 5 (Back bottom right)
+		center + glm::dvec3(-half_width, half_height, -half_depth),  // Vertex 6 (Back top left)
+		center + glm::dvec3(half_width, half_height, -half_depth)    // Vertex 7 (Back top right)
+	};
+
+	// Define indices for triangles
+	const int indices[] = {
+		0, 1, 2,  2, 1, 3,  // Front face
+		4, 6, 5,  5, 6, 7,  // Back face
+		2, 3, 6,  6, 3, 7,  // Top face
+		0, 4, 1,  1, 4, 5,  // Bottom face
+		0, 2, 4,  4, 2, 6,  // Left face
+		1, 5, 3,  3, 5, 7   // Right face
+	};
+
+	// Assign vertices and normal for each triangle in the cube
+	for (size_t i = 0; i < asymmetric_cube.nr_cube_triangles; i++) {
+		const glm::dvec3& v0 = vertices[indices[i * 3]];
+		const glm::dvec3& v1 = vertices[indices[i * 3 + 1]];
+		const glm::dvec3& v2 = vertices[indices[i * 3 + 2]];
+
+		glm::dvec3 normal = glm::normalize(glm::cross(v1 - v0, v2 - v0));
+		asymmetric_cube.cube_triangles[i].vertices[0] = v0;
+		asymmetric_cube.cube_triangles[i].vertices[1] = v1;
+		asymmetric_cube.cube_triangles[i].vertices[2] = v2;
+		asymmetric_cube.cube_triangles[i].normal = normal;
+		asymmetric_cube.cube_triangles[i].center = calculate_triangle_center(asymmetric_cube.cube_triangles[i]);
+	}
+
+	// Material properties
+	asymmetric_cube.material = material;
+	asymmetric_cube.material_color = color;
+	asymmetric_cube.metal_fuzz = metal_fuzz;
+	asymmetric_cube.refraction_index = refraction_index;
+	asymmetric_cube.shininess = shininess;
+
+	return asymmetric_cube;
 }
 
 // To set face normal for spheres
@@ -298,6 +413,112 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 	}
 
 	return hit_anyting;
+}
+
+// Rotation functions for polygons
+
+void rotate_triangle_x(triangle& triangle, double angle) {
+	// Calculate sine and cosine of the angle
+	double cos_angle = cos(angle);
+	double sin_angle = sin(angle);
+
+	// Create the rotation matrix for the x-axis
+	glm::mat3 rotation_matrix_x = {
+		1.0,      0.0,       0.0,
+		0.0, cos_angle, -sin_angle,
+		0.0, sin_angle,  cos_angle
+	};
+
+	glm::dvec3 translation_vector = -triangle.center;
+
+	for (int i = 0; i < 3; i++) {
+		triangle.vertices[i] += translation_vector;
+		triangle.vertices[i] = rotation_matrix_x * triangle.vertices[i];
+		triangle.vertices[i] += -translation_vector;
+	}
+
+	triangle.normal = rotation_matrix_x * triangle.normal;
+}
+
+void rotate_triangle_y(triangle& triangle, double angle) {
+	// Calculate sine and cosine of the angle
+	double cos_angle = cos(angle);
+	double sin_angle = sin(angle);
+
+	// Create the rotation matrix for the y-axis
+	glm::mat3 rotation_matrix_y = {
+		cos_angle,  0.0, sin_angle,
+		0.0,        1.0,      0.0,
+		-sin_angle, 0.0, cos_angle
+	};
+
+	glm::dvec3 translation_vector = -triangle.center;
+
+	for (int i = 0; i < 3; i++) {
+		triangle.vertices[i] += translation_vector;
+		triangle.vertices[i] = rotation_matrix_y * triangle.vertices[i];
+		triangle.vertices[i] += -translation_vector;
+	}
+	triangle.normal = rotation_matrix_y * triangle.normal;
+}
+
+void rotate_triangle_z(triangle& triangle, double angle) {
+	// Calculate sine and cosine of the angle
+	double cos_angle = cos(angle);
+	double sin_angle = sin(angle);
+
+
+	// Create the rotation matrix for the z-axis
+	glm::mat3 rotation_matrix_z = {
+		cos_angle, -sin_angle, 0.0,
+		sin_angle, cos_angle,  0.0,
+		0.0,       0.0,        1.0
+	};
+
+	glm::dvec3 translation_vector = -triangle.center;
+
+	for (int i = 0; i < 3; i++) {
+		triangle.vertices[i] += translation_vector;
+		triangle.vertices[i] = rotation_matrix_z * triangle.vertices[i];
+		triangle.vertices[i] += -translation_vector;
+	}
+	triangle.normal = rotation_matrix_z * triangle.normal;
+}
+
+void rotate_cube_x(scene_object& cube, double angle) {
+	for (int i = 0; i < cube.nr_cube_triangles; i++) {
+		rotate_triangle_x(cube.cube_triangles[i], angle);
+	}
+}
+
+void rotate_cube_y(scene_object& cube, double angle) {
+	for (int i = 0; i < cube.nr_cube_triangles; i++) {
+		rotate_triangle_y(cube.cube_triangles[i], angle);
+	}
+}
+
+void rotate_cube_z(scene_object& cube, double angle) {
+	for (int i = 0; i < cube.nr_cube_triangles; i++) {
+		rotate_triangle_z(cube.cube_triangles[i], angle);
+	}
+}
+
+void rotate_quad_x(scene_object& quad, double angle) {
+	for (int i = 0; i < quad.nr_quad_triangles; i++) {
+		rotate_triangle_x(quad.quad_triangles[i], angle);
+	}
+}
+
+void rotate_quad_y(scene_object& quad, double angle) {
+	for (int i = 0; i < quad.nr_quad_triangles; i++) {
+		rotate_triangle_y(quad.quad_triangles[i], angle);
+	}
+}
+
+void rotate_quad_z(scene_object& quad, double angle) {
+	for (int i = 0; i < quad.nr_quad_triangles; i++) {
+		rotate_triangle_z(quad.quad_triangles[i], angle);
+	}
 }
 
 // Print utilities

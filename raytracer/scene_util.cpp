@@ -29,22 +29,73 @@ void add_dielectric_sphere_to_scene(std::vector<scene_object>& scene_objects, po
 	scene_objects.push_back(inner_sphere);
 }
 
-void add_lambertian_cube_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color) {
+void add_lambertian_cube_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object cube = create_cube(center, size, LAMBERTIAN, color);
+
+	if (x_rotation != 0.0) {
+		rotate_cube_x(cube, x_rotation);
+	}
+	if (y_rotation != 0.0) {
+		rotate_cube_y(cube, y_rotation);
+	}
+	if (z_rotation != 0.0) {
+		rotate_cube_z(cube, z_rotation);
+	}
+
 	scene_objects.push_back(cube);
 }
 
-void add_metal_cube_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color, double metal_fuzz) {
+void add_metal_cube_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color, double metal_fuzz, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object cube = create_cube(center, size, METAL, color, metal_fuzz);
+
+	if (x_rotation != 0.0) {
+		rotate_cube_x(cube, x_rotation);
+	}
+	if (y_rotation != 0.0) {
+		rotate_cube_y(cube, y_rotation);
+	}
+	if (z_rotation != 0.0) {
+		rotate_cube_z(cube, z_rotation);
+	}
+
 	scene_objects.push_back(cube);
 }
 
-void add_dielectric_cube_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, double refraction_index) {
+void add_dielectric_cube_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, double refraction_index, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object outer_cube = create_cube(center, size, DIELECTRIC, {}, {}, refraction_index);
 	scene_object inner_cube = create_cube(center, -(0.95 * size), DIELECTRIC, {}, {}, refraction_index);
 
+	if (x_rotation != 0.0) {
+		rotate_cube_x(outer_cube, x_rotation);
+		rotate_cube_x(inner_cube, x_rotation);
+	}
+	if (y_rotation != 0.0) {
+		rotate_cube_y(outer_cube, y_rotation);
+		rotate_cube_y(inner_cube, y_rotation);
+	}
+	if (z_rotation != 0.0) {
+		rotate_cube_z(outer_cube, z_rotation);
+		rotate_cube_z(inner_cube, z_rotation);
+	}
+
 	scene_objects.push_back(outer_cube);
 	scene_objects.push_back(inner_cube);
+}
+
+void add_lambertian_asymmetric_cube_to_scene(std::vector<scene_object>& scene_objects, point3 center, double width, double height, double depth, color color, double x_rotation, double y_rotation, double z_rotation) {
+	scene_object lambertian_asymmetric_cube = create_asymmetric_cube(center, width, height, depth, LAMBERTIAN, color);
+
+	if (x_rotation != 0.0) {
+		rotate_cube_x(lambertian_asymmetric_cube, x_rotation);
+	}
+	if (y_rotation != 0.0) {
+		rotate_cube_y(lambertian_asymmetric_cube, y_rotation);
+	}
+	if (z_rotation != 0.0) {
+		rotate_cube_z(lambertian_asymmetric_cube, z_rotation);
+	}
+
+	scene_objects.push_back(lambertian_asymmetric_cube);
 }
 
 void add_quad_light_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color color) {
@@ -62,6 +113,7 @@ void add_sphere_light_to_scene(std::vector<scene_object>& scene_objects, point3 
 // Grey lambertian cube, dielectric sphere, yellow metal sphere and a blue lambertian sphere
 // Blue lambertian sphere will be seen through dielectric sphere
 void create_scene_1(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 16.0 / 9.0;
 	camera.look_from = point3(0.0, 0.0, 0.0);
 	camera.look_at = point3(0.0, 0.0, -1.0);
 	camera.vertical_field_of_view = 120.0;
@@ -77,6 +129,7 @@ void create_scene_1(std::vector<scene_object>& scene_objects, camera& camera, co
 // Brown-red lambertian sphere, dielectric cube, metal cube and a blue lambertian sphere
 // Default camera look from/at: Blue lambertian sphere will be seen through dielectric cube
 void create_scene_2(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 16.0 / 9.0;
 	camera.look_from = point3(0.0, 0.0, 0.0);
 	camera.look_at = point3(0.0, 0.0, -1.0);
 	camera.vertical_field_of_view = 120.0;
@@ -91,6 +144,7 @@ void create_scene_2(std::vector<scene_object>& scene_objects, camera& camera, co
 // A blue lambertian sphere and a red metal cube each inside a dielectric cube
 // Default camera look from/at: Blue sphere to the left, red cube to the right
 void create_scene_3(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 16.0 / 9.0;
 	camera.look_from = point3(0.0, 0.0, 0.0);
 	camera.look_at = point3(0.0, 0.0, -1.0);
 	camera.vertical_field_of_view = 120.0;
@@ -105,6 +159,7 @@ void create_scene_3(std::vector<scene_object>& scene_objects, camera& camera, co
 // Test scene for camera with adjustable field of view
 // Default camera look from/at: Blue sphere to the left, red sphere to the right
 void create_scene_4(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 16.0 / 9.0;
 	camera.look_from = point3(0.0, 0.0, 0.0);
 	camera.look_at = point3(0.0, 0.0, -1.0);
 	camera.vertical_field_of_view = 120.0;
@@ -117,6 +172,7 @@ void create_scene_4(std::vector<scene_object>& scene_objects, camera& camera, co
 // Simple test scene with dielectric, lambertian and metal sphere
 // Default camera look from/at: Dielectric sphere to the left, lambertian sphere in the center and metal sphere to the right
 void create_scene_5(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 16.0 / 9.0;
 	camera.look_from = point3(0.0, 0.0, 0.0);
 	camera.look_at = point3(0.0, 0.0, -1.0);
 	camera.vertical_field_of_view = 90.0;
@@ -129,6 +185,7 @@ void create_scene_5(std::vector<scene_object>& scene_objects, camera& camera, co
 
 // Defocus blur scene
 void create_scene_6(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 16.0 / 9.0;
 	// View from upper-back-left corner
 	camera.look_from = point3(-3.5, 3.5, 2.5); 
 	camera.look_at = point3(0, 0, -1);
@@ -145,24 +202,56 @@ void create_scene_6(std::vector<scene_object>& scene_objects, camera& camera, co
 	add_metal_sphere_to_scene(scene_objects, point3(1.0, 0.0, -1.0), 0.5, color(0.8, 0.6, 0.2), 0.0);
 }
 
-// Cornell box
+// Empty Cornell box
 void create_scene_7(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
-	camera.look_from = point3(0.0, 0.0, -10.0);
+	camera.aspect_ratio = 1.0;
+	camera.look_from = point3(0.0, 0.0, -1.0);
 	camera.look_at = point3(0.0, 0.0, -100.0);
-	camera.vertical_field_of_view = 70.0;
+	camera.vertical_field_of_view = 90.0;
 	background_color = color(0.0, 0.0, 0.0);
 
 	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, -50.0, -150.0), point3(50.0, -50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(50.0, -50.0, -50.0), color(0.73, 0.73, 0.73)); // Floor
 	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -150.0), point3(50.0, 50.0, -150.0), point3(-50.0, -50.0, -150.0), point3(50.0, -50.0, -150.0), color(0.73, 0.73, 0.73)); // Back wall
 	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(50.0, 50.0, -150.0), color(0.73, 0.73, 0.73)); // Ceiling
-	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(-50.0, -50.0, -150.0), color(0.12, 0.45, 0.15));
-	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05));
-	add_quad_light_to_scene(scene_objects, point3(-20.0, 50.0, -80.0), point3(20.0, 50.0, -80.0), point3(-20.0, 50.0, -120.0), point3(20.0, 50.0, -120.0), color(15.0, 15.0, 15.0));
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(-50.0, -50.0, -150.0), color(0.12, 0.45, 0.15)); // Right wall (green)
+	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
+	add_quad_light_to_scene(scene_objects, point3(-25.0, 49.9, -75.0), point3(25.0, 49.9, -75.0), point3(-25.0, 49.9, -125.0), point3(25.0, 49.9, -125.0), color(15.0, 15.0, 15.0)); // Light
+}
+
+// Cornell box with two cubes
+void create_scene_8(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 1.0;
+	camera.look_from = point3(0.0, 0.0, -1.0);
+	camera.look_at = point3(0.0, 0.0, -100.0);
+	camera.vertical_field_of_view = 90.0;
+	background_color = color(0.0, 0.0, 0.0);
+
+	// Room
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, -50.0, -150.0), point3(50.0, -50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(50.0, -50.0, -50.0), color(0.73, 0.73, 0.73)); // Floor
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -150.0), point3(50.0, 50.0, -150.0), point3(-50.0, -50.0, -150.0), point3(50.0, -50.0, -150.0), color(0.73, 0.73, 0.73)); // Back wall
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(50.0, 50.0, -150.0), color(0.73, 0.73, 0.73)); // Ceiling
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(-50.0, -50.0, -150.0), color(0.12, 0.45, 0.15)); // Right wall (green)
+	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
+	add_quad_light_to_scene(scene_objects, point3(-25.0, 49.9, -75.0), point3(25.0, 49.9, -75.0), point3(-25.0, 49.9, -125.0), point3(25.0, 49.9, -125.0), color(15.0, 15.0, 15.0)); // Light
+
+	// Objects
+	add_lambertian_asymmetric_cube_to_scene(scene_objects, point3(-10.0, -15.0, -115.0), 30.0, 70.0, 30.0, {}, degrees_to_radians(45.0));
+	add_lambertian_cube_to_scene(scene_objects, point3(10.0, -35.0, -80.0), 30.0, {}, degrees_to_radians(-45.0));
+}
+
+void create_scene_9(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 16.0 / 9.0;
+	camera.look_from = point3(0.0, 0.0, 1.0);
+	camera.look_at = point3(0.0, 0.0, 0.0);
+	camera.vertical_field_of_view = 90.0;
+	background_color = color(0.70, 0.80, 1.00); // "Sky" background
+
+	add_lambertian_cube_to_scene(scene_objects, point3(0.0, 0.0, 0.0), 1.0, {}, degrees_to_radians(45.0));
 }
 
 // Populate scene with geometries
 std::vector<scene_object> create_scene(camera& camera, color& background_color) {
 	std::vector<scene_object> scene_objects = std::vector<scene_object>();
-	create_scene_5(scene_objects, camera, background_color);
+	create_scene_9(scene_objects, camera, background_color);
 	return scene_objects;
 }
