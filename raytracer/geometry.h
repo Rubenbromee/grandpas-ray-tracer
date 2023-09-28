@@ -53,6 +53,7 @@ struct scene_object {
 	// Quad fields, polygon surface
 	size_t nr_quad_triangles = 2;
 	triangle quad_triangles[2];
+	point3 quad_center;
 
 	// Sphere fields, implicit surface
 	glm::dvec3 center;
@@ -61,6 +62,7 @@ struct scene_object {
 	// Cube fields, polygon surface
 	size_t nr_cube_triangles = 12;
 	triangle cube_triangles[12];
+	point3 cube_center;
 };
 
 scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0);
@@ -78,9 +80,9 @@ bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record& rec);
 bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects);
 
-void rotate_triangle_x(triangle& triangle, double angle);
-void rotate_triangle_y(triangle& triangle, double angle);
-void rotate_triangle_z(triangle& triangle, double angle);
+void rotate_triangle_x(triangle& triangle, double angle, point3 center);
+void rotate_triangle_y(triangle& triangle, double angle, point3 center);
+void rotate_triangle_z(triangle& triangle, double angle, point3 center);
 
 void rotate_cube_x(scene_object& cube, double angle);
 void rotate_cube_y(scene_object& cube, double angle);

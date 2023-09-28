@@ -6,8 +6,19 @@
 // Utility functions to add different scene objects to scenes
 // Tight coupling between scene objects and materials comes back to haunt me here
 
-void add_lambertian_quad_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color color) {
+void add_lambertian_quad_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color color, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object lambertian_quad = create_quad(top_left, top_right, bottom_left, bottom_right, LAMBERTIAN, color);
+
+	if (x_rotation != 0.0) {
+		rotate_quad_x(lambertian_quad, x_rotation);
+	}
+	if (y_rotation != 0.0) {
+		rotate_quad_y(lambertian_quad, y_rotation);
+	}
+	if (z_rotation != 0.0) {
+		rotate_quad_z(lambertian_quad, z_rotation);
+	}
+
 	scene_objects.push_back(lambertian_quad);
 }
 
@@ -235,23 +246,26 @@ void create_scene_8(std::vector<scene_object>& scene_objects, camera& camera, co
 	add_quad_light_to_scene(scene_objects, point3(-25.0, 49.9, -75.0), point3(25.0, 49.9, -75.0), point3(-25.0, 49.9, -125.0), point3(25.0, 49.9, -125.0), color(15.0, 15.0, 15.0)); // Light
 
 	// Objects
-	add_lambertian_asymmetric_cube_to_scene(scene_objects, point3(-10.0, -15.0, -115.0), 30.0, 70.0, 30.0, {}, degrees_to_radians(45.0));
-	add_lambertian_cube_to_scene(scene_objects, point3(10.0, -35.0, -80.0), 30.0, {}, degrees_to_radians(-45.0));
+	add_lambertian_asymmetric_cube_to_scene(scene_objects, point3(-10.0, -15.0, -115.0), 30.0, 70.0, 30.0, {}, {}, 30.0);
+	add_lambertian_cube_to_scene(scene_objects, point3(10.0, -35.0, -80.0), 30.0, {}, {}, -30.0);
 }
 
 void create_scene_9(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
 	camera.aspect_ratio = 16.0 / 9.0;
-	camera.look_from = point3(0.0, 0.0, 1.0);
+	camera.look_from = point3(-3.5, 3.5, 2.5);
 	camera.look_at = point3(0.0, 0.0, 0.0);
-	camera.vertical_field_of_view = 90.0;
+	camera.vertical_field_of_view = 20.0;
 	background_color = color(0.70, 0.80, 1.00); // "Sky" background
 
-	add_lambertian_cube_to_scene(scene_objects, point3(0.0, 0.0, 0.0), 1.0, {}, degrees_to_radians(45.0));
+	add_lambertian_sphere_to_scene(scene_objects, point3(0.0, -100.5, 0.0), 100.0, color(0.8, 0.8, 0.0)); // "Ground"
+	add_lambertian_cube_to_scene(scene_objects, point3(-1.0, 0.0, 0.0), 0.5, color(1.0, 0.0, 0.0), {}, {}, 60.0);
+	add_metal_cube_to_scene(scene_objects, point3(1.0, 0.0, 0.0), 0.5, color(0.8, 0.6, 0.2), 0.0, 45.0, 45.0);
+	add_lambertian_cube_to_scene(scene_objects, point3(0.0, 0.0, 0.0), 0.5, color(1.0, 0.0, 0.0), 60.0);
 }
 
 // Populate scene with geometries
 std::vector<scene_object> create_scene(camera& camera, color& background_color) {
 	std::vector<scene_object> scene_objects = std::vector<scene_object>();
-	create_scene_9(scene_objects, camera, background_color);
+	create_scene_8(scene_objects, camera, background_color);
 	return scene_objects;
 }
