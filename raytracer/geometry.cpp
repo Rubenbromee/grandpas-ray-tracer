@@ -14,7 +14,7 @@ point3 calculate_triangle_center(const triangle& triangle) {
 }
 
 // A quad is just made up of two triangles
-scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
+scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object quad;
 	quad.object_type = QUAD;
 	quad.quad_center = (top_left + top_right + bottom_left + bottom_right) * 0.25;
@@ -23,7 +23,6 @@ scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, 
 	quad.material_color = color;
 	quad.metal_fuzz = metal_fuzz;
 	quad.refraction_index = refraction_index;
-	quad.shininess = shininess;
 
 	// Define the vertices of the quad
 	triangle triangles[2];
@@ -51,7 +50,7 @@ scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, 
 	return quad;
 }
 
-scene_object create_quad(point3 center, double width, double height, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
+scene_object create_quad(point3 center, double width, double height, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object quad;
 	quad.object_type = QUAD;
 	quad.quad_center = center;
@@ -60,7 +59,6 @@ scene_object create_quad(point3 center, double width, double height, material_en
 	quad.material_color = color;
 	quad.metal_fuzz = metal_fuzz;
 	quad.refraction_index = refraction_index;
-	quad.shininess = shininess;
 
 	// Calculate half-width and half-height
 	double half_width = width * 0.5;
@@ -98,7 +96,7 @@ scene_object create_quad(point3 center, double width, double height, material_en
 }
 
 // A sphere is an implicit surface
-scene_object create_sphere(point3 center, double radius, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
+scene_object create_sphere(point3 center, double radius, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object sphere;
 
 	// Geometry properties
@@ -111,14 +109,13 @@ scene_object create_sphere(point3 center, double radius, material_enum material,
 	sphere.material_color = color;
 	sphere.metal_fuzz = metal_fuzz;
 	sphere.refraction_index = refraction_index;
-	sphere.shininess = shininess;
 
 	return sphere;
 }
 
 // A cube is defined by 12 triangles
 // Front face towards camera
-scene_object create_cube(point3 center, double size, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
+scene_object create_cube(point3 center, double size, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object cube;
 
 	// Geometric properties
@@ -171,12 +168,11 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	cube.material_color = color;
 	cube.metal_fuzz = metal_fuzz;
 	cube.refraction_index = refraction_index;
-	cube.shininess = shininess;
 
 	return cube;
 }
 
-scene_object create_asymmetric_cube(point3 center, double width, double height, double depth, material_enum material, color color, double metal_fuzz, double refraction_index, double shininess) {
+scene_object create_asymmetric_cube(point3 center, double width, double height, double depth, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object asymmetric_cube;
 
 	// Geometric properties
@@ -231,7 +227,6 @@ scene_object create_asymmetric_cube(point3 center, double width, double height, 
 	asymmetric_cube.material_color = color;
 	asymmetric_cube.metal_fuzz = metal_fuzz;
 	asymmetric_cube.refraction_index = refraction_index;
-	asymmetric_cube.shininess = shininess;
 
 	return asymmetric_cube;
 }
@@ -373,7 +368,6 @@ void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record
 	temp_rec.material_color = obj.material_color;
 	temp_rec.metal_fuzz = obj.metal_fuzz;
 	temp_rec.refraction_index = obj.refraction_index;
-	temp_rec.shininess = obj.shininess;
 
 	rec = temp_rec;
 }
@@ -441,46 +435,91 @@ void rotate_triangle_x(triangle& triangle, double angle, point3 center) {
 	triangle.normal = glm::dvec3(normal) + center;
 }
 
-void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
-	angle = glm::radians(angle);
+//void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
+//	angle = glm::radians(angle);
+//
+//	// Calculate sine and cosine of the angle
+//	double cos_angle = cos(angle);
+//	double sin_angle = sin(angle);
+//
+//	glm::dmat4 model = glm::mat4(1.0f);
+//	model = glm::rotate(model, angle, glm::dvec3(0.0, 1.0, 0.0));
+//
+//	for (int i = 0; i < 3; i++) {
+//		glm::dvec4 vertex = glm::dvec4(triangle.vertices[i] - center, 1.0);
+//		vertex = model * vertex;
+//		triangle.vertices[i] = glm::dvec3(vertex) + center;
+//	}
+//
+//	glm::dvec4 normal = glm::dvec4(triangle.normal - center, 1.0);
+//	normal = model * normal;
+//	triangle.normal = glm::dvec3(normal) + center;
+//}
 
+void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
 	// Calculate sine and cosine of the angle
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
 
-	glm::dmat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, angle, glm::dvec3(0.0, 1.0, 0.0));
+	// Create the rotation matrix for the y-axis
+	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(0.0, 1.0, 0.0));
 
 	for (int i = 0; i < 3; i++) {
-		glm::dvec4 vertex = glm::dvec4(triangle.vertices[i] - center, 1.0);
-		vertex = model * vertex;
-		triangle.vertices[i] = glm::dvec3(vertex) + center;
+		glm::dvec3 relative_vertex = triangle.vertices[i] - center;
+		glm::dvec4 vertex = glm::dvec4(relative_vertex, 1.0);
+		vertex = rotation_matrix * vertex;
+		triangle.vertices[i] = center + glm::dvec3(vertex);
 	}
 
-	glm::dvec4 normal = glm::dvec4(triangle.normal - center, 1.0);
-	normal = model * normal;
-	triangle.normal = glm::dvec3(normal) + center;
+	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
+	normal = rotation_matrix * normal;
+	triangle.normal = glm::dvec3(normal);
 }
 
-void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
-	angle = glm::radians(angle);
+//void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
+//	glm::dmat4 translation_matrix = glm::translate(glm::dmat4(1.0f), -center);
+//
+//	angle = glm::radians(angle);
+//
+//	// Calculate sine and cosine of the angle
+//	double cos_angle = cos(angle);
+//	double sin_angle = sin(angle);
+//
+//	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(0.0, 0.0, 1.0));
+//
+//	for (int i = 0; i < 3; i++) {
+//		glm::dvec4 vertex = glm::dvec4(triangle.vertices[i], 1.0);
+//		vertex = translation_matrix * vertex;
+//		vertex = rotation_matrix * vertex;
+//		vertex = glm::inverse(translation_matrix) * vertex;
+//		triangle.vertices[i] = glm::dvec3(vertex);
+//	}
+//
+//	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
+//	normal = translation_matrix * normal;
+//	normal = rotation_matrix * normal;
+//	normal = glm::inverse(translation_matrix) * normal;
+//	triangle.normal = glm::dvec3(normal);
+//}
 
+void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
 	// Calculate sine and cosine of the angle
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
 
-	glm::dmat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, angle, glm::dvec3(0.0, 0.0, 1.0));
+	// Create the rotation matrix for the Z-axis
+	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(0.0, 0.0, 1.0));
 
 	for (int i = 0; i < 3; i++) {
-		glm::dvec4 vertex = glm::dvec4(triangle.vertices[i] - center, 1.0);
-		vertex = model * vertex;
-		triangle.vertices[i] = glm::dvec3(vertex) + center;
+		glm::dvec3 relative_vertex = triangle.vertices[i] - center;
+		glm::dvec4 vertex = glm::dvec4(relative_vertex, 1.0);
+		vertex = rotation_matrix * vertex;
+		triangle.vertices[i] = center + glm::dvec3(vertex);
 	}
 
-	glm::dvec4 normal = glm::dvec4(triangle.normal - center, 1.0);
-	normal = model * normal;
-	triangle.normal = glm::dvec3(normal) + center;
+	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
+	normal = rotation_matrix * normal;
+	triangle.normal = glm::dvec3(normal);
 }
 
 void rotate_cube_x(scene_object& cube, double angle) {

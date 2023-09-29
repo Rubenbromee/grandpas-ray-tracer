@@ -13,7 +13,6 @@ struct hit_record {
 	material_enum material;
 	color material_color;
 	double metal_fuzz;
-	double shininess;
 	double refraction_index;
 	double time;
 	bool outward_face;
@@ -47,7 +46,6 @@ struct scene_object {
 	material_enum material;
 	color material_color;
 	double metal_fuzz;
-	double shininess;
 	double refraction_index;
 
 	// Quad fields, polygon surface
@@ -65,11 +63,11 @@ struct scene_object {
 	point3 cube_center;
 };
 
-scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0);
-scene_object create_quad(point3 center, double width, double height, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0);
-scene_object create_sphere(point3 center, double radius, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0);
-scene_object create_cube(point3 center, double size, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0);
-scene_object create_asymmetric_cube(point3 center, double width, double height, double depth, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0, double shininess = 1.0);
+scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
+scene_object create_quad(point3 center, double width, double height, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
+scene_object create_sphere(point3 center, double radius, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
+scene_object create_cube(point3 center, double size, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
+scene_object create_asymmetric_cube(point3 center, double width, double height, double depth, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 
 void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_record& rec);
 bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& sphere);
