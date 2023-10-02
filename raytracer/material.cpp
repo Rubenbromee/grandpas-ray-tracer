@@ -5,19 +5,29 @@
 #include "geometry.h"
 #include "camera.h"
 
-bool lambertian_scatter(const ray& ray_in, const hit_record& rec, color& attenuation, ray& scattered_ray) {
-	glm::dvec3 scattered_ray_direction = rec.normal + random_hemispherical_direction(rec.normal);
+bool lambertian_scatter(const ray& ray_in, const hit_record& rec, color& attenuation, ray& scattered_ray, double& pdf) {
+	//glm::dvec3 scattered_ray_direction = rec.normal + random_hemispherical_direction(rec.normal);
 
-	// To avoid zero vector as scatter direction if random direction vector is opposite normal
-	if (near_zero(scattered_ray_direction)) {
-		scattered_ray_direction = rec.normal;
-	}
+	//// To avoid zero vector as scatter direction if random direction vector is opposite normal
+	//if (near_zero(scattered_ray_direction)) {
+	//	scattered_ray_direction = rec.normal;
+	//}
+
+	onb onb = build_onb_from_w(rec.normal);
+	glm::dvec3 scattered_ray_direction = local_coord(onb, random_cosine_direction());
 
 	scattered_ray = create_ray(rec.point, scattered_ray_direction);
 
 	attenuation = rec.material_color;
 
+	pdf = glm::dot(onb.w, scattered_ray_direction) / pi;
+
 	return true;
+}
+
+double lambertian_scatter_pdf(const ray& ray_in, const hit_record& rec, const ray& scattered_ray) {
+	double cosine = glm::dot(rec.normal, glm::normalize(scattered_ray.direction));
+	return cosine < 0.0 ? 0.0 : cosine / pi;
 }
 
 bool metallic_reflection(const ray& ray_in, const hit_record& rec, color& attenuation, ray& reflected_ray, double metallic_fuzz) {
