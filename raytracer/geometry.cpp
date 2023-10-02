@@ -415,7 +415,7 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 // Rotation functions for polygons
 
 void rotate_triangle_x(triangle& triangle, double angle, point3 center) {
-	angle = glm::radians(-angle);
+	angle = glm::radians(-angle); // Convert angle to radians and counter clockwise rotation with z-axis pointing towards camera
 
 	// Calculate sine and cosine of the angle
 	double cos_angle = cos(angle);
@@ -435,28 +435,9 @@ void rotate_triangle_x(triangle& triangle, double angle, point3 center) {
 	triangle.normal = glm::dvec3(normal) + center;
 }
 
-//void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
-//	angle = glm::radians(angle);
-//
-//	// Calculate sine and cosine of the angle
-//	double cos_angle = cos(angle);
-//	double sin_angle = sin(angle);
-//
-//	glm::dmat4 model = glm::mat4(1.0f);
-//	model = glm::rotate(model, angle, glm::dvec3(0.0, 1.0, 0.0));
-//
-//	for (int i = 0; i < 3; i++) {
-//		glm::dvec4 vertex = glm::dvec4(triangle.vertices[i] - center, 1.0);
-//		vertex = model * vertex;
-//		triangle.vertices[i] = glm::dvec3(vertex) + center;
-//	}
-//
-//	glm::dvec4 normal = glm::dvec4(triangle.normal - center, 1.0);
-//	normal = model * normal;
-//	triangle.normal = glm::dvec3(normal) + center;
-//}
-
 void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
+	angle = glm::radians(angle); // Convert angle to radians
+
 	// Calculate sine and cosine of the angle
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
@@ -476,33 +457,9 @@ void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
 	triangle.normal = glm::dvec3(normal);
 }
 
-//void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
-//	glm::dmat4 translation_matrix = glm::translate(glm::dmat4(1.0f), -center);
-//
-//	angle = glm::radians(angle);
-//
-//	// Calculate sine and cosine of the angle
-//	double cos_angle = cos(angle);
-//	double sin_angle = sin(angle);
-//
-//	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(0.0, 0.0, 1.0));
-//
-//	for (int i = 0; i < 3; i++) {
-//		glm::dvec4 vertex = glm::dvec4(triangle.vertices[i], 1.0);
-//		vertex = translation_matrix * vertex;
-//		vertex = rotation_matrix * vertex;
-//		vertex = glm::inverse(translation_matrix) * vertex;
-//		triangle.vertices[i] = glm::dvec3(vertex);
-//	}
-//
-//	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
-//	normal = translation_matrix * normal;
-//	normal = rotation_matrix * normal;
-//	normal = glm::inverse(translation_matrix) * normal;
-//	triangle.normal = glm::dvec3(normal);
-//}
-
 void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
+	angle = glm::radians(angle); // Convert angle to radians
+
 	// Calculate sine and cosine of the angle
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
