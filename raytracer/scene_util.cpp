@@ -264,11 +264,11 @@ void create_scene_7(std::vector<scene_object>& scene_objects, camera& camera, co
 	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(50.0, 50.0, -150.0), color(0.73, 0.73, 0.73)); // Ceiling
 	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(-50.0, -50.0, -150.0), color(0.12, 0.45, 0.15)); // Right wall (green)
 	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
-	add_quad_light_to_scene(scene_objects, point3(-15.0, 49.9, -85.0), point3(15.0, 49.9, -85.0), point3(-15.0, 49.9, -115.0), point3(15.0, 49.9, -115.0), color(5.0, 5.0, 5.0)); // Light
+	add_quad_light_to_scene(scene_objects, point3(-15.0, 49.9, -85.0), point3(15.0, 49.9, -85.0), point3(-15.0, 49.9, -115.0), point3(15.0, 49.9, -115.0), color(15.0, 15.0, 15.0)); // Light
 
 	// Objects
-	add_lambertian_asymmetric_cube_to_scene(scene_objects, point3(-20.0, -15.0, -115.0), 30.0, 70.0, 30.0, color(0.5, 0.5, 0.5), {}, 10.0, {});
-	add_lambertian_cube_to_scene(scene_objects, point3(20.0, -35.0, -80.0), 30.0, color(0.5, 0.5, 0.5), {}, -10.0, {});
+	add_lambertian_asymmetric_cube_to_scene(scene_objects, point3(-20.0, -15.0, -115.0), 30.0, 70.0, 30.0, color(0.5, 0.5, 0.5), {}, 30.0, {});
+	add_lambertian_cube_to_scene(scene_objects, point3(20.0, -35.0, -80.0), 30.0, color(0.5, 0.5, 0.5), {}, -30.0, {});
 }
 
 // Cornell box with more objects and a blue wall behind the camera

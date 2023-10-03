@@ -47,6 +47,8 @@ scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, 
 		quad.quad_triangles[i].center = calculate_triangle_center(quad.quad_triangles[i]);
 	}
 
+	quad.quad_area = calculate_quad_area(quad);
+
 	return quad;
 }
 
@@ -92,6 +94,8 @@ scene_object create_quad(point3 center, double width, double height, material_en
 		quad.quad_triangles[i].center = calculate_triangle_center(quad.quad_triangles[i]);
 	}
 
+	quad.quad_area = calculate_quad_area(quad);
+
 	return quad;
 }
 
@@ -103,6 +107,7 @@ scene_object create_sphere(point3 center, double radius, material_enum material,
 	sphere.object_type = SPHERE;
 	sphere.center = center;
 	sphere.radius = radius;
+	sphere.sphere_area = 4.0 * pi * (radius * radius);
 
 	// Material properties
 	sphere.material = material;
@@ -121,6 +126,7 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	// Geometric properties
 	cube.object_type = CUBE;
 	cube.cube_center = center;
+
 
 	double half = size * 0.5;
 
@@ -168,6 +174,8 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	cube.material_color = color;
 	cube.metal_fuzz = metal_fuzz;
 	cube.refraction_index = refraction_index;
+
+	cube.cube_area = calculate_cube_area(cube);
 
 	return cube;
 }
@@ -228,10 +236,12 @@ scene_object create_asymmetric_cube(point3 center, double width, double height, 
 	asymmetric_cube.metal_fuzz = metal_fuzz;
 	asymmetric_cube.refraction_index = refraction_index;
 
+	asymmetric_cube.cube_area = calculate_cube_area(asymmetric_cube);
+
 	return asymmetric_cube;
 }
 
-// To set face normal for spheres
+// To set face normal for geometries
 void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_record& rec) {
 	rec.outward_face = glm::dot(ray.direction, outward_normal) < 0;
 	rec.normal = rec.outward_face ? outward_normal : -outward_normal;
@@ -412,6 +422,50 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 	return hit_anyting;
 }
 
+// Iterate through all scene geometries and look for intersection with current ray
+scene_object find_intersection_return_scene_object(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects, bool& hit_anything) {
+	size_t nr_scene_objects = scene_objects.size();
+	hit_record temp_rec;
+	hit_anything = false;
+	double closest_so_far = initial_ray_time_interval.max;
+	interval local_ray_time_interval = { initial_ray_time_interval.min, closest_so_far };
+	scene_object return_obj;
+
+	for (size_t i = 0; i < nr_scene_objects; i++) {
+		const scene_object& obj = scene_objects[i];
+
+		switch (obj.object_type) {
+		case SPHERE:
+			if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+				return_obj = obj;
+				hit_anything = true;
+				local_ray_time_interval.max = temp_rec.time;
+				update_hit_record(temp_rec, obj, rec);
+			}
+			break;
+		case CUBE:
+			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+				return_obj = obj;
+				hit_anything = true;
+				local_ray_time_interval.max = temp_rec.time;
+				update_hit_record(temp_rec, obj, rec);
+			}
+			break;
+		case QUAD:
+			if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+				return_obj = obj;
+				hit_anything = true;
+				local_ray_time_interval.max = temp_rec.time;
+				update_hit_record(temp_rec, obj, rec);
+			}
+			break;
+		}
+
+	}
+
+	return return_obj;
+}
+
 // Rotation functions for polygons
 
 void rotate_triangle_x(triangle& triangle, double angle, point3 center) {
@@ -513,6 +567,51 @@ void rotate_quad_z(scene_object& quad, double angle) {
 	for (int i = 0; i < quad.nr_quad_triangles; i++) {
 		rotate_triangle_z(quad.quad_triangles[i], angle, point3(0.0, 0.0, 0.0));
 	}
+}
+
+double calculate_cube_area(const scene_object& cube) {
+	double total_area = 0.0;
+
+	for (size_t i = 0; i < cube.nr_cube_triangles; i++) {
+		const triangle& triangle = cube.cube_triangles[i];
+
+		// Calculate the area of the triangle using Heron's formula
+		glm::dvec3 a = triangle.vertices[0];
+		glm::dvec3 b = triangle.vertices[1];
+		glm::dvec3 c = triangle.vertices[2];
+		double side_1 = glm::length(b - a);
+		double side_2 = glm::length(c - b);
+		double side_3 = glm::length(a - c);
+		double s = (side_1 + side_2 + side_3) / 2.0;
+		double triangle_area = glm::sqrt(s * (s - side_1) * (s - side_2) * (s - side_3));
+
+		total_area += triangle_area;
+	}
+
+	return total_area;
+}
+
+double calculate_quad_area(const scene_object& quad) {
+	double total_area = 0.0;
+
+	for (size_t i = 0; i < quad.nr_quad_triangles; i++) {
+		const triangle& triangle = quad.quad_triangles[i];
+
+		// Calculate the area of the triangle using Heron's formula
+		glm::dvec3 a = triangle.vertices[0];
+		glm::dvec3 b = triangle.vertices[1];
+		glm::dvec3 c = triangle.vertices[2];
+		double side_1 = glm::length(b - a);
+		double side_2 = glm::length(c - b);
+		double side_3 = glm::length(a - c);
+		double s = (side_1 + side_2 + side_3) / 2.0;
+		double triangle_area = glm::sqrt(s * (s - side_1) * (s - side_2) * (s - side_3));
+
+		total_area += triangle_area;
+	}
+
+	// Since there are 2 triangles in the quad, multiply by 2 to get the total surface area
+	return total_area;
 }
 
 // Print utilities

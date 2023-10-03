@@ -112,7 +112,6 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 
 	ray scattered_ray;
 	color attenuation;
-	color emitted = rec.material_color;
 	double pdf;
 
 	// If intersection, check material for emission/ray-traversal
@@ -123,17 +122,19 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 			glm::dvec3 to_light = on_light - rec.point;
 			double distance_squared = glm::dot(to_light, to_light);
 			to_light = glm::normalize(to_light);
+
 			if (glm::dot(to_light, rec.normal) < 0.0) {
-				return emitted;
+				return emitted(rec);
 			}
 			double light_area = glm::abs(-15.0 - 15.0) * glm::abs(-85.0 - (-115.0));
 			double light_cosine = glm::abs(to_light.y);
+			
 			if (light_cosine < 0.000001) {
-				return emitted;
+				return emitted(rec);
 			}
 			pdf = distance_squared / (light_cosine * light_area);
 			scattered_ray = create_ray(rec.point, to_light);
-			return attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) * 
+			return emitted(rec) + attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) *
 			ray_color(scattered_ray, (depth - 1), scene_objects, background_color) / pdf;
 		}
 		break;
@@ -148,7 +149,7 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 		}
 		break;
 	case LIGHT:
-		return rec.material_color + attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color);
+		return rec.material_color; // + attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color);
 		break;
 	}
 }

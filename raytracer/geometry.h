@@ -16,6 +16,7 @@ struct hit_record {
 	double refraction_index;
 	double time;
 	bool outward_face;
+	bool front_facing_normal; // Is the normal facing the camera?
 };
 
 // Triangles have counter-clockwise/right-hand rule, for normals
@@ -52,15 +53,18 @@ struct scene_object {
 	size_t nr_quad_triangles = 2;
 	triangle quad_triangles[2];
 	point3 quad_center;
+	double quad_area;
 
 	// Sphere fields, implicit surface
 	glm::dvec3 center;
 	double radius;
+	double sphere_area;
 
 	// Cube fields, polygon surface
 	size_t nr_cube_triangles = 12;
 	triangle cube_triangles[12];
 	point3 cube_center;
+	double cube_area;
 };
 
 scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
@@ -77,6 +81,7 @@ bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 
 void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record& rec);
 bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects);
+scene_object find_intersection_return_scene_object(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects, bool& hit_anything);
 
 void rotate_triangle_x(triangle& triangle, double angle, point3 center);
 void rotate_triangle_y(triangle& triangle, double angle, point3 center);
@@ -89,6 +94,9 @@ void rotate_cube_z(scene_object& cube, double angle);
 void rotate_quad_x(scene_object& quad, double angle);
 void rotate_quad_y(scene_object& quad, double angle);
 void rotate_quad_z(scene_object& quad, double angle);
+
+double calculate_cube_area(const scene_object& cube);
+double calculate_quad_area(const scene_object& quad);
 
 std::ostream& print_triangle(std::ostream& os, triangle triangle);
 std::ostream& print_cube(std::ostream& os, scene_object cube, point3 cube_center, double cube_size);

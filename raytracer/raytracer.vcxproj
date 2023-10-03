@@ -24,6 +24,7 @@
     <ClInclude Include="create_image.h" />
     <ClInclude Include="geometry.h" />
     <ClInclude Include="material.h" />
+    <ClInclude Include="pdf.h" />
     <ClInclude Include="ray.h" />
     <ClInclude Include="scene_util.h" />
     <ClInclude Include="util.h" />
@@ -35,6 +36,7 @@
     <ClCompile Include="geometry.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="material.cpp" />
+    <ClCompile Include="pdf.cpp" />
     <ClCompile Include="ray.cpp" />
     <ClCompile Include="scene_util.cpp" />
     <ClCompile Include="util.cpp" />

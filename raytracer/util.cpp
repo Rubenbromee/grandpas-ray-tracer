@@ -78,6 +78,7 @@ onb build_onb_from_w(const glm::dvec3 normal) {
 	return onb;
 }
 
+
 std::ostream& print_vector(std::ostream& os, glm::dvec3 vector) {
 	os << "(" << vector.x << ", " << vector.y << ", " << vector.z << ")";
 	return os;

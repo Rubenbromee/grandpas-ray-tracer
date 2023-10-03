@@ -5,14 +5,16 @@
 #include "geometry.h"
 #include "camera.h"
 
+color emitted(const hit_record& rec) {
+	if (!rec.outward_face) {
+		return rec.material_color;
+	}
+	else {
+		return color(0.0, 0.0, 0.0);
+	}
+}
+
 bool lambertian_scatter(const ray& ray_in, const hit_record& rec, color& attenuation, ray& scattered_ray, double& pdf) {
-	//glm::dvec3 scattered_ray_direction = rec.normal + random_hemispherical_direction(rec.normal);
-
-	//// To avoid zero vector as scatter direction if random direction vector is opposite normal
-	//if (near_zero(scattered_ray_direction)) {
-	//	scattered_ray_direction = rec.normal;
-	//}
-
 	onb onb = build_onb_from_w(rec.normal);
 	glm::dvec3 scattered_ray_direction = local_coord(onb, random_cosine_direction());
 
