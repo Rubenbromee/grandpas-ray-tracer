@@ -6,6 +6,7 @@
 #include "scene_util.h"
 #include "gtc/matrix_transform.hpp"
 
+// Triangle centers are needed for rotation
 point3 calculate_triangle_center(const triangle& triangle) {
 	// Calculate the average of the vertices' coordinates
 	point3 center = (triangle.vertices[0] + triangle.vertices[1] + triangle.vertices[2]) / 3.0;
@@ -13,7 +14,7 @@ point3 calculate_triangle_center(const triangle& triangle) {
 	return center;
 }
 
-// A quad is just made up of two triangles
+// A quad is just made up of two triangles, defined by its corner points
 scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object quad;
 	quad.object_type = QUAD;
@@ -52,6 +53,7 @@ scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, 
 	return quad;
 }
 
+// A quad defined by its width and height instead of explicit corner points
 scene_object create_quad(point3 center, double width, double height, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object quad;
 	quad.object_type = QUAD;
@@ -118,8 +120,8 @@ scene_object create_sphere(point3 center, double radius, material_enum material,
 	return sphere;
 }
 
-// A cube is defined by 12 triangles
-// Front face towards camera
+// A symmetric cube defined by 12 triangles
+// Front face is by default towards positive z-axis
 scene_object create_cube(point3 center, double size, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object cube;
 
@@ -180,6 +182,7 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	return cube;
 }
 
+// An asymmetric cube defined by width, height and depth instead of just a size
 scene_object create_asymmetric_cube(point3 center, double width, double height, double depth, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object asymmetric_cube;
 
@@ -382,7 +385,7 @@ void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record
 	rec = temp_rec;
 }
 
-// Iterate through all scene geometries and look for intersection with current ray
+// Iterate through all scene geometries and look for intersection with current ray, returns intersection flag
 bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects) {
 	size_t nr_scene_objects = scene_objects.size();
 	hit_record temp_rec;
@@ -422,7 +425,7 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 	return hit_anyting;
 }
 
-// Iterate through all scene geometries and look for intersection with current ray
+// Iterate through all scene geometries and look for intersection with current ray, return the intersected scene object instead of just an intersection flag
 scene_object find_intersection_return_scene_object(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects, bool& hit_anything) {
 	size_t nr_scene_objects = scene_objects.size();
 	hit_record temp_rec;
@@ -468,6 +471,7 @@ scene_object find_intersection_return_scene_object(const ray& ray, interval init
 
 // Rotation functions for polygons
 
+// Rotates a triangle counter-clockwise along the positive x-axis
 void rotate_triangle_x(triangle& triangle, double angle, point3 center) {
 	angle = glm::radians(-angle); // Convert angle to radians and counter clockwise rotation with z-axis pointing towards camera
 
@@ -475,20 +479,23 @@ void rotate_triangle_x(triangle& triangle, double angle, point3 center) {
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
 	
-	glm::dmat4 model = glm::mat4(1.0f);
-	model = glm::rotate(model, angle, glm::dvec3(1.0, 0.0, 0.0));
+	// Create the rotation matrix for the x-axis
+	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(1.0, 0.0, 0.0));
 
+	// Translate each vertex so that the triangle center would be in the world origin, rotate, then translate back
 	for (int i = 0; i < 3; i++) {
 		glm::dvec4 vertex = glm::dvec4(triangle.vertices[i] - center, 1.0);
-		vertex = model * vertex;
+		vertex = rotation_matrix * vertex;
 		triangle.vertices[i] = glm::dvec3(vertex) + center;
 	}
 
+	// Same procedure with normal as with vertices
 	glm::dvec4 normal = glm::dvec4(triangle.normal - center, 1.0);
-	normal = model * normal;
+	normal = rotation_matrix * normal;
 	triangle.normal = glm::dvec3(normal) + center;
 }
 
+// Rotates a triangle counter-clockwise along the positive y-axis
 void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
 	angle = glm::radians(angle); // Convert angle to radians
 
@@ -499,6 +506,7 @@ void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
 	// Create the rotation matrix for the y-axis
 	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(0.0, 1.0, 0.0));
 
+	// Translate each vertex so that the triangle center would be in the world origin, rotate, then translate back
 	for (int i = 0; i < 3; i++) {
 		glm::dvec3 relative_vertex = triangle.vertices[i] - center;
 		glm::dvec4 vertex = glm::dvec4(relative_vertex, 1.0);
@@ -506,6 +514,7 @@ void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
 		triangle.vertices[i] = center + glm::dvec3(vertex);
 	}
 
+	// Same procedure with normal as with vertices
 	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
 	normal = rotation_matrix * normal;
 	triangle.normal = glm::dvec3(normal);
@@ -518,9 +527,10 @@ void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
 
-	// Create the rotation matrix for the Z-axis
+	// Create the rotation matrix for the z-axis
 	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(0.0, 0.0, 1.0));
 
+	// Translate each vertex so that the triangle center would be in the world origin, rotate, then translate back
 	for (int i = 0; i < 3; i++) {
 		glm::dvec3 relative_vertex = triangle.vertices[i] - center;
 		glm::dvec4 vertex = glm::dvec4(relative_vertex, 1.0);
@@ -528,10 +538,13 @@ void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
 		triangle.vertices[i] = center + glm::dvec3(vertex);
 	}
 
+	// Same procedure with normal as with vertices
 	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
 	normal = rotation_matrix * normal;
 	triangle.normal = glm::dvec3(normal);
 }
+
+// For all polygons, just rotate each triangle
 
 void rotate_cube_x(scene_object& cube, double angle) {
 	for (int i = 0; i < cube.nr_cube_triangles; i++) {
@@ -568,6 +581,8 @@ void rotate_quad_z(scene_object& quad, double angle) {
 		rotate_triangle_z(quad.quad_triangles[i], angle, point3(0.0, 0.0, 0.0));
 	}
 }
+
+// Utility functions for surface area calculations for polygons
 
 double calculate_cube_area(const scene_object& cube) {
 	double total_area = 0.0;
@@ -610,7 +625,6 @@ double calculate_quad_area(const scene_object& quad) {
 		total_area += triangle_area;
 	}
 
-	// Since there are 2 triangles in the quad, multiply by 2 to get the total surface area
 	return total_area;
 }
 

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <future>
 #include <vector>
+#include <algorithm>
 #include "camera.h"
 #include "color.h"
 #include "util.h"
@@ -9,6 +10,7 @@
 #include "material.h"
 #include "scene_util.h"
 #include "glm.hpp"
+#include "pdf.h"
 
 std::ostream& print_camera_configuration(std::ostream& os, const camera& camera) {
 	os << "Aspect ratio: " << camera.aspect_ratio << std::endl;
@@ -70,7 +72,7 @@ void initialize(camera& camera) {
 	print_camera_configuration(std::cout, camera);
 }
 
-// Sample a random point around pixel center within delta_u and delta_v bounds
+// Sample a random point around pixel center in the viewport within delta_u and delta_v bounds
 point3 pixel_sample_square(const camera& camera) {
 	double px = -0.5 + random_double(0.0, 1.0);
 	double py = -0.5 + random_double(0.0, 1.0);
@@ -96,7 +98,7 @@ const ray& get_multisample_ray(int i, int j, const camera& camera) {
 }
 
 // Calculate color for current ray
-color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& scene_objects, const color& background_color) {
+color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& scene_objects, const color& background_color, const std::vector<scene_object>& lights) {
 	hit_record rec;
 	interval initial_ray_time_interval = { 0.001, infinity };
 
@@ -118,38 +120,43 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 	switch (rec.material) {
 	case LAMBERTIAN:
 		if (lambertian_scatter(ray_in, rec, attenuation, scattered_ray, pdf)) {
-			point3 on_light = point3(random_double(-15.0, 15.0), 49.9, random_double(-85.0, -115.0)); // add_quad_light_to_scene(scene_objects, point3(-15.0, 49.9, -85.0), point3(15.0, 49.9, -85.0), point3(-15.0, 49.9, -115.0), point3(15.0, 49.9, -115.0), color(30.0, 30.0, 30.0)); // Light
-			glm::dvec3 to_light = on_light - rec.point;
-			double distance_squared = glm::dot(to_light, to_light);
-			to_light = glm::normalize(to_light);
-
-			if (glm::dot(to_light, rec.normal) < 0.0) {
-				return emitted(rec);
-			}
-			double light_area = glm::abs(-15.0 - 15.0) * glm::abs(-85.0 - (-115.0));
-			double light_cosine = glm::abs(to_light.y);
+			ray scattered_ray;
+			double pdf = 0.0;
+			glm::dvec3 scattered_ray_direction = glm::dvec3(0.0, 0.0, 0.0);
+			int nr_contributing_rays = 0;
 			
-			if (light_cosine < 0.000001) {
-				return emitted(rec);
+			// Use a mixture of sampling the (each?) light source and sampling a random direction (cosine sampling) approximate visible area to half of totala area?
+			if (random_double() < 0.5) {
+				for (const scene_object& light : lights) {
+					calculate_intersectable_pdf(light, rec, scattered_ray_direction, pdf, scene_objects, nr_contributing_rays);
+				}
+				pdf /= static_cast<double>(nr_contributing_rays);
+				scattered_ray_direction /= static_cast<double>(nr_contributing_rays);
+				scattered_ray = create_ray(rec.point, scattered_ray_direction);
 			}
-			pdf = distance_squared / (light_cosine * light_area);
-			scattered_ray = create_ray(rec.point, to_light);
+			else {
+				onb onb = build_onb_from_w(rec.normal);
+				glm::dvec3 random_direction = random_hemispherical_direction(rec.normal);
+				scattered_ray = create_ray(rec.point, random_direction);
+				pdf = cosine_pdf(rec.normal, random_direction);
+			}
+
 			return emitted(rec) + attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) *
-			ray_color(scattered_ray, (depth - 1), scene_objects, background_color) / pdf;
+				ray_color(scattered_ray, (depth - 1), scene_objects, background_color, lights) / pdf;
 		}
 		break;
 	case METAL:
 		if (metallic_reflection(ray_in, rec, attenuation, scattered_ray, rec.metal_fuzz)) {
-			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color);
+			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, lights);
 		}
 		break;
 	case DIELECTRIC:
 		if (dielectric_refraction(ray_in, rec, attenuation, scattered_ray, rec.refraction_index)) {
-			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color);
+			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, lights);
 		}
 		break;
 	case LIGHT:
-		return rec.material_color; // + attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color);
+		return rec.material_color;
 		break;
 	}
 }
@@ -157,6 +164,17 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 void render(camera& camera) {
 	color background_color;
 	std::vector<scene_object> scene_objects = create_scene(camera, background_color); // Set up scene objects, camera, background color
+
+	// Get the lights in the scene byt filtering them out of all scene objects
+	std::vector<scene_object> lights = create_scene(camera, background_color); 
+	for (auto it = lights.begin(); it != lights.end();) {
+		if (it->material != LIGHT) {
+			it = lights.erase(it);
+		}
+		else {
+			++it;
+		}
+	}
 
 	initialize(camera); // Set up camera, create viewport from scene creation configurations
 
@@ -180,7 +198,7 @@ void render(camera& camera) {
 				// Multi-sample a pixel
 				for (size_t sample = 0; sample < camera.samples_per_pixel; sample++) {
 					const ray& ray = get_multisample_ray(i, j, camera);
-					pixel_colors[i][j] += ray_color(ray, camera.max_depth, scene_objects, background_color);
+					pixel_colors[i][j] += ray_color(ray, camera.max_depth, scene_objects, background_color, lights);
 				}
 			}));
 		}
