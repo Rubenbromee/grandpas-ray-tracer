@@ -146,14 +146,57 @@ void add_dielectric_asymmetric_cube_to_scene(std::vector<scene_object>& scene_ob
 	scene_objects.push_back(inner_cube);
 }
 
-void add_quad_light_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color color) {
+void add_quad_light_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color color, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object quad_light = create_quad(top_left, top_right, bottom_left, bottom_right, LIGHT, color);
+
+	if (x_rotation != 0.0) {
+		rotate_quad_x(quad_light, x_rotation);
+	}
+	if (y_rotation != 0.0) {
+		rotate_quad_y(quad_light, y_rotation);
+	}
+	if (z_rotation != 0.0) {
+		rotate_quad_z(quad_light, z_rotation);
+	}
+
 	scene_objects.push_back(quad_light);
 }
 
 void add_sphere_light_to_scene(std::vector<scene_object>& scene_objects, point3 center, double radius, color color) {
 	scene_object sphere_light = create_sphere(center, radius, LIGHT, color);
 	scene_objects.push_back(sphere_light);
+}
+
+void add_cube_light_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color, double x_rotation, double y_rotation, double z_rotation) {
+	scene_object cube_light = create_cube(center, size, LIGHT, color);
+
+	if (x_rotation != 0.0) {
+		rotate_cube_x(cube_light, x_rotation);
+	}
+	if (y_rotation != 0.0) {
+		rotate_cube_y(cube_light, y_rotation);
+	}
+	if (z_rotation != 0.0) {
+		rotate_cube_z(cube_light, z_rotation);
+	}
+
+	scene_objects.push_back(cube_light);
+}
+
+void add_asymmetric_cube_light_to_scene(std::vector<scene_object>& scene_objects, point3 center, double width, double height, double depth, color color, double x_rotation, double y_rotation, double z_rotation) {
+	scene_object asymmetric_cube_light = create_asymmetric_cube(center, width, height, depth, LIGHT, color);
+
+	if (x_rotation != 0.0) {
+		rotate_cube_x(asymmetric_cube_light, x_rotation);
+	}
+	if (y_rotation != 0.0) {
+		rotate_cube_y(asymmetric_cube_light, y_rotation);
+	}
+	if (z_rotation != 0.0) {
+		rotate_cube_z(asymmetric_cube_light, z_rotation);
+	}
+
+	scene_objects.push_back(asymmetric_cube_light);
 }
 
 // Utility functions to create different scenes
@@ -313,9 +356,49 @@ void create_scene_9(std::vector<scene_object>& scene_objects, camera& camera, co
 	add_lambertian_cube_to_scene(scene_objects, point3(1.0, 0.0, -1.0), 0.5, color(0.0, 0.0, 1.0), 45.0, 45.0, 45.0);
 }
 
+// Cornell box with sphere
+void create_scene_10(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 1.0;
+	camera.look_from = point3(0.0, 0.0, -1.0);
+	camera.look_at = point3(0.0, 0.0, -100.0);
+	camera.vertical_field_of_view = 90.0;
+	background_color = color(0.0, 0.0, 0.0);
+
+	// Room
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, -50.0, -150.0), point3(50.0, -50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(50.0, -50.0, -50.0), color(0.73, 0.73, 0.73)); // Floor
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -150.0), point3(50.0, 50.0, -150.0), point3(-50.0, -50.0, -150.0), point3(50.0, -50.0, -150.0), color(0.73, 0.73, 0.73)); // Back wall
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(50.0, 50.0, -150.0), color(0.73, 0.73, 0.73)); // Ceiling
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(-50.0, -50.0, -150.0), color(0.12, 0.45, 0.15)); // Right wall (green)
+	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
+	add_quad_light_to_scene(scene_objects, point3(-15.0, 49.9, -85.0), point3(15.0, 49.9, -85.0), point3(-15.0, 49.9, -115.0), point3(15.0, 49.9, -115.0), color(15.0, 15.0, 15.0)); // Light
+
+	add_lambertian_sphere_to_scene(scene_objects, point3(0.0, -15.0, -100.0), 20.0);
+}
+
+// Cornell box with multiple light geometries
+void create_scene_11(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
+	camera.aspect_ratio = 1.0;
+	camera.look_from = point3(0.0, 0.0, -1.0);
+	camera.look_at = point3(0.0, 0.0, -100.0);
+	camera.vertical_field_of_view = 90.0;
+	background_color = color(0.0, 0.0, 0.0);
+
+	// Room
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, -50.0, -150.0), point3(50.0, -50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(50.0, -50.0, -50.0), color(0.73, 0.73, 0.73)); // Floor
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -150.0), point3(50.0, 50.0, -150.0), point3(-50.0, -50.0, -150.0), point3(50.0, -50.0, -150.0), color(0.73, 0.73, 0.73)); // Back wall
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(50.0, 50.0, -150.0), color(0.73, 0.73, 0.73)); // Ceiling
+	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(-50.0, -50.0, -150.0), color(0.12, 0.45, 0.15)); // Right wall (green)
+	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
+	
+	// Lights
+	// add_sphere_light_to_scene(scene_objects, point3(0.0, 20.0, -100.0), 10.0, color(10.0, 10.0, 10.0));
+	add_asymmetric_cube_light_to_scene(scene_objects, point3(0.0, -15.0, -85.0), 5.0, 15.0, 5.0, color(10.0, 10.0, 10.0), 45.0, 45.0, 45.0);
+	
+}
+
 // Populate scene with geometries, change which scene is rendered here
 std::vector<scene_object> create_scene(camera& camera, color& background_color) {
 	std::vector<scene_object> scene_objects = std::vector<scene_object>();
-	create_scene_7(scene_objects, camera, background_color);
+	create_scene_11(scene_objects, camera, background_color);
 	return scene_objects;
 }

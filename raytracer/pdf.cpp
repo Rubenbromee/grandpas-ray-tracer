@@ -7,13 +7,11 @@
 #include "ray.h"
 
 // Samples towards a light in the scene
-double intersectable_pdf(point3 origin, glm::dvec3 light_direction, const scene_object& light, const hit_record& rec) {
-	if (light.material != LIGHT) {
-		return infinity;
-	}
-	double area = 1.0;
+double intersectable_pdf(point3 origin, glm::dvec3 light_direction, const scene_object& light, const hit_record& rec, const point3 random_point_on_light) {
+	double area = 1.0; // To prevent possible 0 division
 
 	// For the non-quad geometries I'm assuming that half of the light area is visible to the geometry intersection point
+	// This will hopefully be a good enough estimation
 	switch (light.object_type) {
 	case SPHERE:
 		area = light.sphere_area / 2.0;
@@ -28,7 +26,7 @@ double intersectable_pdf(point3 origin, glm::dvec3 light_direction, const scene_
 		area = light.cube_area / 2.0;
 		break;
 	}
-	double distance_squared = rec.time * rec.time * glm::dot(light_direction, light_direction);
+	double distance_squared = glm::distance(rec.point, random_point_on_light) * glm::distance(rec.point, random_point_on_light);
 	double cosine = glm::abs(glm::dot(light_direction, rec.normal) / glm::length(light_direction));
 	return distance_squared / (cosine * area);
 }
@@ -51,19 +49,9 @@ void calculate_intersectable_pdf(const scene_object& light, const hit_record& re
 		break;
 	}
 
-	// Check if ray towards light hits anything except a light source, don't contribute from this light source
-	// Ok, so this is shadow rays
-	glm::dvec3 direction_towards_light = glm::normalize(random_point_on_light - rec.point);
-	hit_record temp_rec;
-	bool hit_anything;
-	scene_object intersected_object = find_intersection_return_scene_object(create_ray(rec.point, direction_towards_light), interval{ 0.001, infinity }, temp_rec, scene_objects, hit_anything);
-	if (hit_anything && intersected_object.material != LIGHT) {
-		return;
-	}
-
 	glm::dvec3 direction_to_light = glm::normalize(random_point_on_light - rec.point);
 	scattered_ray_direction += direction_to_light;
-	pdf += intersectable_pdf(rec.point, direction_to_light, light, rec);
+	pdf += intersectable_pdf(rec.point, direction_to_light, light, rec, random_point_on_light);
 	nr_contributing_rays++;
 }
 
@@ -100,7 +88,7 @@ point3 get_random_point_on_cube(point3 origin, const scene_object& cube, const s
 
 	glm::dvec3 vector_to_random_point = random_point_on_cube - origin;
 
-	// If this dot product is negative it means we've hit the far side of the cube and want to reflect the point to the near side
+	// If this dot product is negative it means we've hit the far side of the cube, seen from the origin, and want to reflect the point to the near side
 	// Do so by finding the intersection in the negative normal direction
 	if (glm::dot(vector_to_random_point, random_triangle.normal) > 0.0) {
 		hit_record rec;
@@ -158,7 +146,7 @@ point3 get_random_point_on_sphere(point3 origin, const scene_object& sphere, con
 
 	glm::dvec3 vector_to_random_point = random_point - origin;
 
-	// If the point is on the far side of the sphere, move it to the near side
+	// If the point is on the far side of the sphere seen from the origin, move it to the near side
 	if (glm::dot(vector_to_random_point, rec.normal) > 0.0) {
 		random_point = random_point + (2.0 * sphere.radius) * (-rec.normal);
 	}

@@ -16,7 +16,6 @@ struct hit_record {
 	double refraction_index;
 	double time;
 	bool outward_face;
-	bool front_facing_normal; // Is the normal facing the camera?
 };
 
 // Triangles have counter-clockwise/right-hand rule, for normals

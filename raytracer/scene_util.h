@@ -19,8 +19,9 @@ void add_lambertian_asymmetric_cube_to_scene(std::vector<scene_object>& scene_ob
 void add_metal_asymmetric_cube_to_scene(std::vector<scene_object>& scene_objects, point3 center, double width, double height, double depth, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double x_rotation = 0.0, double y_rotation = 0.0, double z_rotation = 0.0);
 void add_dielectric_asymmetric_cube_to_scene(std::vector<scene_object>& scene_objects, point3 center, double width, double height, double depth, double refraction_index = 1.0, double x_rotation = 0.0, double y_rotation = 0.0, double z_rotation = 0.0);
 
-void add_quad_light_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color = glm::dvec3(4.0, 4.0, 4.0));
+void add_quad_light_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color = glm::dvec3(4.0, 4.0, 4.0), double x_rotation = 0.0, double y_rotation = 0.0, double z_rotation = 0.0);
 void add_sphere_light_to_scene(std::vector<scene_object>& scene_objects, point3 center, double radius, color color = glm::dvec3(4.0, 4.0, 4.0));
+void add_asymmetric_cube_light_to_scene(std::vector<scene_object>& scene_objects, point3 center, double width, double height, double depth, color color = glm::dvec3(4.0, 4.0, 4.0), double x_rotation = 0.0, double y_rotation = 0.0, double z_rotation = 0.0);
 
 void create_scene_1(std::vector<scene_object>& scene_objects, camera& camera, color& background_color);
 void create_scene_2(std::vector<scene_object>& scene_objects, camera& camera, color& background_color);

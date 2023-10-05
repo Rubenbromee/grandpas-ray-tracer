@@ -187,7 +187,7 @@ scene_object create_asymmetric_cube(point3 center, double width, double height, 
 	scene_object asymmetric_cube;
 
 	// Geometric properties
-	asymmetric_cube.object_type = CUBE;
+	asymmetric_cube.object_type = ASYMMETRIC_CUBE;
 	asymmetric_cube.cube_center = center;
 
 	double half_width = width * 0.5;
@@ -389,7 +389,7 @@ void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record
 bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects) {
 	size_t nr_scene_objects = scene_objects.size();
 	hit_record temp_rec;
-	bool hit_anyting = false;
+	bool hit_anything = false;
 	double closest_so_far = initial_ray_time_interval.max;
 	interval local_ray_time_interval = { initial_ray_time_interval.min, closest_so_far };
 
@@ -399,30 +399,36 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 		switch (obj.object_type) {
 		case SPHERE:
 			if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				hit_anyting = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
-			break;
-		case CUBE:
-			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				hit_anyting = true;
+				hit_anything = true;
 				local_ray_time_interval.max = temp_rec.time;
 				update_hit_record(temp_rec, obj, rec);
 			}
 			break;
 		case QUAD:
 			if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				hit_anyting = true;
+				hit_anything = true;
+				local_ray_time_interval.max = temp_rec.time;
+				update_hit_record(temp_rec, obj, rec);
+			}
+			break;
+		case CUBE:
+			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+				hit_anything = true;
+				local_ray_time_interval.max = temp_rec.time;
+				update_hit_record(temp_rec, obj, rec);
+			}
+			break;
+		case ASYMMETRIC_CUBE:
+			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+				hit_anything = true;
 				local_ray_time_interval.max = temp_rec.time;
 				update_hit_record(temp_rec, obj, rec);
 			}
 			break;
 		}
-
 	}
 
-	return hit_anyting;
+	return hit_anything;
 }
 
 // Iterate through all scene geometries and look for intersection with current ray, return the intersected scene object instead of just an intersection flag
@@ -446,14 +452,6 @@ scene_object find_intersection_return_scene_object(const ray& ray, interval init
 				update_hit_record(temp_rec, obj, rec);
 			}
 			break;
-		case CUBE:
-			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				return_obj = obj;
-				hit_anything = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
-			break;
 		case QUAD:
 			if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
 				return_obj = obj;
@@ -462,8 +460,23 @@ scene_object find_intersection_return_scene_object(const ray& ray, interval init
 				update_hit_record(temp_rec, obj, rec);
 			}
 			break;
+		case CUBE:
+			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+				return_obj = obj;
+				hit_anything = true;
+				local_ray_time_interval.max = temp_rec.time;
+				update_hit_record(temp_rec, obj, rec);
+			}
+			break;
+		case ASYMMETRIC_CUBE:
+			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+				return_obj = obj;
+				hit_anything = true;
+				local_ray_time_interval.max = temp_rec.time;
+				update_hit_record(temp_rec, obj, rec);
+			}
+			break;
 		}
-
 	}
 
 	return return_obj;

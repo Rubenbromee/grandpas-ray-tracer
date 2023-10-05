@@ -2,6 +2,7 @@
 #include "ray.h"
 #include "util.h"
 
+// Lights are an emitting material that can be put on any geometry
 enum material_enum {
 	LAMBERTIAN,
 	METAL,

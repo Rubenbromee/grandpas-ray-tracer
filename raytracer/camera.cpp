@@ -125,8 +125,9 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 			glm::dvec3 scattered_ray_direction = glm::dvec3(0.0, 0.0, 0.0);
 			int nr_contributing_rays = 0;
 			
-			// Use a mixture of sampling the (each?) light source and sampling a random direction (cosine sampling) approximate visible area to half of totala area?
-			if (random_double() < 0.5) {
+			// 50/50 mixture of intersectable pdf and cosine pdf unless there are no light sources, then just use cosine pdf
+			// When handling multiple light sources, take the average pdf and scattered angle for all light sources
+			if (lights.size() > 0 && random_double() < 0.5) {
 				for (const scene_object& light : lights) {
 					calculate_intersectable_pdf(light, rec, scattered_ray_direction, pdf, scene_objects, nr_contributing_rays);
 				}
@@ -165,7 +166,7 @@ void render(camera& camera) {
 	color background_color;
 	std::vector<scene_object> scene_objects = create_scene(camera, background_color); // Set up scene objects, camera, background color
 
-	// Get the lights in the scene byt filtering them out of all scene objects
+	// Get the lights in the scene by filtering them out of all scene objects
 	std::vector<scene_object> lights = create_scene(camera, background_color); 
 	for (auto it = lights.begin(); it != lights.end();) {
 		if (it->material != LIGHT) {
