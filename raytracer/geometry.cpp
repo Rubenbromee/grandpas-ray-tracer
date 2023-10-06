@@ -486,26 +486,27 @@ scene_object find_intersection_return_scene_object(const ray& ray, interval init
 
 // Rotates a triangle counter-clockwise along the positive x-axis
 void rotate_triangle_x(triangle& triangle, double angle, point3 center) {
-	angle = glm::radians(-angle); // Convert angle to radians and counter clockwise rotation with z-axis pointing towards camera
+	angle = glm::radians(angle); // Convert angle to radians
 
 	// Calculate sine and cosine of the angle
 	double cos_angle = cos(angle);
 	double sin_angle = sin(angle);
-	
+
 	// Create the rotation matrix for the x-axis
-	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(1.0, 0.0, 0.0));
+	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0), angle, glm::dvec3(1.0, 0.0, 0.0));
 
 	// Translate each vertex so that the triangle center would be in the world origin, rotate, then translate back
 	for (int i = 0; i < 3; i++) {
-		glm::dvec4 vertex = glm::dvec4(triangle.vertices[i] - center, 1.0);
+		glm::dvec3 relative_vertex = triangle.vertices[i] - center;
+		glm::dvec4 vertex = glm::dvec4(relative_vertex, 1.0);
 		vertex = rotation_matrix * vertex;
-		triangle.vertices[i] = glm::dvec3(vertex) + center;
+		triangle.vertices[i] = center + glm::dvec3(vertex);
 	}
 
 	// Same procedure with normal as with vertices
-	glm::dvec4 normal = glm::dvec4(triangle.normal - center, 1.0);
+	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
 	normal = rotation_matrix * normal;
-	triangle.normal = glm::dvec3(normal) + center;
+	triangle.normal = glm::dvec3(normal);
 }
 
 // Rotates a triangle counter-clockwise along the positive y-axis
@@ -517,7 +518,7 @@ void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
 	double sin_angle = sin(angle);
 
 	// Create the rotation matrix for the y-axis
-	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(0.0, 1.0, 0.0));
+	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0), angle, glm::dvec3(0.0, 1.0, 0.0));
 
 	// Translate each vertex so that the triangle center would be in the world origin, rotate, then translate back
 	for (int i = 0; i < 3; i++) {
@@ -541,7 +542,7 @@ void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
 	double sin_angle = sin(angle);
 
 	// Create the rotation matrix for the z-axis
-	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0f), angle, glm::dvec3(0.0, 0.0, 1.0));
+	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0), angle, glm::dvec3(0.0, 0.0, 1.0));
 
 	// Translate each vertex so that the triangle center would be in the world origin, rotate, then translate back
 	for (int i = 0; i < 3; i++) {
@@ -656,6 +657,16 @@ std::ostream& print_triangle(std::ostream& os, triangle triangle) {
 std::ostream& print_cube(std::ostream& os, scene_object cube, point3 cube_center, double cube_size) {
 	os << "Created cube with center at: " << "(" << cube_center.x << ", " << cube_center.y << ", " << cube_center.z << ")" << std::endl;
 	os << "Size: " << cube_size << std::endl;
+	os << "Triangles: " << std::endl;
+	for (size_t i = 0; i < cube.nr_cube_triangles; i++) {
+		print_triangle(os, cube.cube_triangles[i]);
+	}
+	os << std::endl;
+	return os;
+}
+
+std::ostream& print_asymmetric_cube(std::ostream& os, scene_object cube, point3 cube_center) {
+	os << "Created cube with center at: " << "(" << cube_center.x << ", " << cube_center.y << ", " << cube_center.z << ")" << std::endl;
 	os << "Triangles: " << std::endl;
 	for (size_t i = 0; i < cube.nr_cube_triangles; i++) {
 		print_triangle(os, cube.cube_triangles[i]);

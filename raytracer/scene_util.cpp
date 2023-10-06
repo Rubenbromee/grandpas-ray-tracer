@@ -106,6 +106,8 @@ void add_lambertian_asymmetric_cube_to_scene(std::vector<scene_object>& scene_ob
 		rotate_cube_z(cube, z_rotation);
 	}
 
+	// print_asymmetric_cube(std::cout, cube, cube.cube_center);
+
 	scene_objects.push_back(cube);
 }
 
@@ -351,9 +353,9 @@ void create_scene_9(std::vector<scene_object>& scene_objects, camera& camera, co
 	background_color = color(0.70, 0.80, 1.00); // "Sky" background
 
 	add_lambertian_sphere_to_scene(scene_objects, point3(0.0, -100.5, -1.0), 100.0, color(0.8, 0.8, 0.0)); // "Ground"
-	add_lambertian_cube_to_scene(scene_objects, point3(-1.0, 0.0, -1.0), 0.5, color(1.0, 0.0, 0.0), {}, {}, 45.0);
-	add_lambertian_cube_to_scene(scene_objects, point3(0.0, 0.0, -1.0), 0.5, color(0.0, 1.0, 0.0), {}, 45.0, {});
-	add_lambertian_cube_to_scene(scene_objects, point3(1.0, 0.0, -1.0), 0.5, color(0.0, 0.0, 1.0), 45.0, 45.0, 45.0);
+	add_lambertian_asymmetric_cube_to_scene(scene_objects, point3(-1.0, 0.0, -1.0), 0.25, 0.5, 0.25, color(0.5, 0.5, 0.5), {}, {}, 45.0);
+	add_lambertian_asymmetric_cube_to_scene(scene_objects, point3(0.0, 0.0, -1.0), 0.25, 0.5, 0.25, color(0.5, 0.5, 0.5), -180.0, {}, {});
+	add_lambertian_asymmetric_cube_to_scene(scene_objects, point3(1.0, 0.0, -1.0), 0.25, 0.5, 0.25, color(0.5, 0.5, 0.5), 45.0, 45.0, 45.0);
 }
 
 // Cornell box with sphere
@@ -391,9 +393,10 @@ void create_scene_11(std::vector<scene_object>& scene_objects, camera& camera, c
 	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
 	
 	// Lights
-	// add_sphere_light_to_scene(scene_objects, point3(0.0, 20.0, -100.0), 10.0, color(10.0, 10.0, 10.0));
-	add_asymmetric_cube_light_to_scene(scene_objects, point3(0.0, -15.0, -85.0), 5.0, 15.0, 5.0, color(10.0, 10.0, 10.0), 45.0, 45.0, 45.0);
-	
+	add_sphere_light_to_scene(scene_objects, point3(0.0, 30.0, -100.0), 10.0, color(0.0, 10.0, 0.0));
+	add_asymmetric_cube_light_to_scene(scene_objects, point3(-30.0, -15.0, -85.0), 5.0, 15.0, 5.0, color(10.0, 0.0, 0.0), 45.0, 45.0, 45.0);
+	add_cube_light_to_scene(scene_objects, point3(30.0, -15.0, -85.0), 10.0, color(0.0, 0.0, 10.0));
+	add_lambertian_sphere_to_scene(scene_objects, point3(0.0, 0.0, -100.0), 15.0, color(0.5, 0.5, 0.5));
 }
 
 // Populate scene with geometries, change which scene is rendered here

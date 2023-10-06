@@ -99,3 +99,4 @@ double calculate_quad_area(const scene_object& quad);
 
 std::ostream& print_triangle(std::ostream& os, triangle triangle);
 std::ostream& print_cube(std::ostream& os, scene_object cube, point3 cube_center, double cube_size);
+std::ostream& print_asymmetric_cube(std::ostream& os, scene_object cube, point3 cube_center);
