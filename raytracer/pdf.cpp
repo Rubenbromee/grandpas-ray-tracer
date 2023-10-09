@@ -16,11 +16,11 @@ double intersectable_pdf(point3 origin, glm::dvec3 light_direction, const scene_
 	case SPHERE:
 		area = light.sphere_area / 2.0;
 		break;
-	case CUBE:
-		area = light.cube_area / 2.0;
-		break;
 	case QUAD:
 		area = light.quad_area;
+		break;
+	case CUBE:
+		area = light.cube_area / 2.0;
 		break;
 	case ASYMMETRIC_CUBE:
 		area = light.cube_area / 2.0;
@@ -31,28 +31,28 @@ double intersectable_pdf(point3 origin, glm::dvec3 light_direction, const scene_
 	return distance_squared / (cosine * area);
 }
 
-void calculate_intersectable_pdf(const scene_object& light, const hit_record& rec, glm::dvec3& scattered_ray_direction, double& pdf, const std::vector<scene_object> scene_objects, int& nr_contributing_rays) {
-	point3 random_point_on_light;
+// Point the indirect ray towards a random point on a sample object (light, dielectric object), calculate pdf based on distance to object
+void calculate_intersectable_pdf(const scene_object& sample_object, const hit_record& rec, glm::dvec3& scattered_ray_direction, double& pdf, const std::vector<scene_object> scene_objects) {
+	point3 random_point_on_sample_object;
 
-	switch (light.object_type) {
+	switch (sample_object.object_type) {
 		case SPHERE:
-			random_point_on_light = get_random_point_on_sphere(rec.point, light, rec);
-		break;
-		case CUBE:
-			random_point_on_light = get_random_point_on_cube(rec.point, light, scene_objects);
-		break;
-		case ASYMMETRIC_CUBE:
-			random_point_on_light = get_random_point_on_cube(rec.point, light, scene_objects);
+			random_point_on_sample_object = get_random_point_on_sphere(rec.point, sample_object, rec);
 		break;
 		case QUAD:
-			random_point_on_light = get_random_point_on_quad(rec.point, light);
+			random_point_on_sample_object = get_random_point_on_quad(rec.point, sample_object);
+			break;
+		case CUBE:
+			random_point_on_sample_object = get_random_point_on_cube(rec.point, sample_object, scene_objects);
+		break;
+		case ASYMMETRIC_CUBE:
+			random_point_on_sample_object = get_random_point_on_cube(rec.point, sample_object, scene_objects);
 		break;
 	}
 
-	glm::dvec3 direction_to_light = glm::normalize(random_point_on_light - rec.point);
-	scattered_ray_direction += direction_to_light;
-	pdf += intersectable_pdf(rec.point, direction_to_light, light, rec, random_point_on_light);
-	nr_contributing_rays++;
+	glm::dvec3 direction_to_sample_object = glm::normalize(random_point_on_sample_object - rec.point);
+	scattered_ray_direction = direction_to_sample_object;
+	pdf = intersectable_pdf(rec.point, direction_to_sample_object, sample_object, rec, random_point_on_sample_object);
 }
 
 // Uniformly samples in a hemisphere around the geometry intersection point

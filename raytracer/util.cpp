@@ -34,6 +34,18 @@ double random_double(double min, double max) {
 	}
 }
 
+int random_int(int min, int max) {
+	// Create a random number generator engine
+	std::random_device rd;  // Initialize the random device
+	std::mt19937 gen(rd()); // Mersenne Twister 19937 generator engine
+
+	std::uniform_int_distribution<int> distribution(min, max);
+
+	int random_int = distribution(gen);
+
+	return random_int;
+}
+
 point3 random_point_in_unit_disk() {
 	while (true) {
 		point3 point = point3(random_double(-1.0, 1.0), random_double(-1.0, 1.0), 0.0);

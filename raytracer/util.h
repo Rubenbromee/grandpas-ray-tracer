@@ -36,6 +36,7 @@ const static interval universe = { -infinity, +infinity };
 double degrees_to_radians(double degrees);
 bool near_zero(glm::dvec3 vector);
 double random_double(double min = 0.0, double max = 1.0);
+int random_int(int min, int max);
 void re_seed_random_generator();
 point3 random_point_in_unit_disk();
 glm::dvec3 random_cosine_direction();

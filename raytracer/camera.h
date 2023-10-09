@@ -29,5 +29,5 @@ void initialize(camera& camera);
 point3 pixel_sample_square(const camera& camera);
 point3 defocus_disk_sample(const camera& camera);
 const ray& get_multisample_ray(int i, int j, const camera& camera);
-color ray_color(const ray& ray, int depth, const std::vector<scene_object>& scene_objects, const color& background_color, const std::vector<scene_object>& lights);
+color ray_color(const ray& ray, int depth, const std::vector<scene_object>& scene_objects, const color& background_color, const std::vector<scene_object>& sample_objects);
 void render(camera& camera);

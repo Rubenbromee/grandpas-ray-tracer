@@ -98,7 +98,7 @@ const ray& get_multisample_ray(int i, int j, const camera& camera) {
 }
 
 // Calculate color for current ray
-color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& scene_objects, const color& background_color, const std::vector<scene_object>& lights) {
+color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& scene_objects, const color& background_color, const std::vector<scene_object>& sample_objects) {
 	hit_record rec;
 	interval initial_ray_time_interval = { 0.001, infinity };
 
@@ -123,17 +123,14 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 			ray scattered_ray;
 			double pdf = 0.0;
 			glm::dvec3 scattered_ray_direction = glm::dvec3(0.0, 0.0, 0.0);
-			int nr_contributing_rays = 0;
 			
-			// 50/50 mixture of intersectable pdf and cosine pdf unless there are no light sources, then just use cosine pdf
-			// When handling multiple light sources, take the average pdf and scattered angle for all light sources
-			if (lights.size() > 0 && random_double() < 0.5) {
-				for (const scene_object& light : lights) {
-					calculate_intersectable_pdf(light, rec, scattered_ray_direction, pdf, scene_objects, nr_contributing_rays);
-				}
-				pdf /= static_cast<double>(nr_contributing_rays);
-				scattered_ray_direction /= static_cast<double>(nr_contributing_rays);
-				scattered_ray = create_ray(rec.point, scattered_ray_direction);
+			// 50/50 mixture of intersectable pdf and cosine pdf unless there are no sample objects, then just use cosine pdf
+			if (sample_objects.size() > 0 && random_double() < 0.5) {
+				// Choose random sample object (light, dielectric, etc.)
+				int random_index = random_int(0, (sample_objects.size() - 1));
+				const scene_object& sample_object = sample_objects[random_index];
+
+				calculate_intersectable_pdf(sample_object, rec, scattered_ray_direction, pdf, scene_objects);
 			}
 			else {
 				onb onb = build_onb_from_w(rec.normal);
@@ -143,17 +140,17 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 			}
 
 			return emitted(rec) + attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) *
-				ray_color(scattered_ray, (depth - 1), scene_objects, background_color, lights) / pdf;
+				ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects) / pdf;
 		}
 		break;
 	case METAL:
 		if (metallic_reflection(ray_in, rec, attenuation, scattered_ray, rec.metal_fuzz)) {
-			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, lights);
+			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
 		}
 		break;
 	case DIELECTRIC:
 		if (dielectric_refraction(ray_in, rec, attenuation, scattered_ray, rec.refraction_index)) {
-			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, lights);
+			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
 		}
 		break;
 	case LIGHT:
@@ -167,10 +164,10 @@ void render(camera& camera) {
 	std::vector<scene_object> scene_objects = create_scene(camera, background_color); // Set up scene objects, camera, background color
 
 	// Get the lights in the scene by filtering them out of all scene objects
-	std::vector<scene_object> lights = create_scene(camera, background_color); 
-	for (auto it = lights.begin(); it != lights.end();) {
-		if (it->material != LIGHT) {
-			it = lights.erase(it);
+	std::vector<scene_object> sample_objects = create_scene(camera, background_color); 
+	for (auto it = sample_objects.begin(); it != sample_objects.end();) {
+		if (it->material != DIELECTRIC && it->material != LIGHT) {
+			it = sample_objects.erase(it);
 		}
 		else {
 			++it;
@@ -199,7 +196,7 @@ void render(camera& camera) {
 				// Multi-sample a pixel
 				for (size_t sample = 0; sample < camera.samples_per_pixel; sample++) {
 					const ray& ray = get_multisample_ray(i, j, camera);
-					pixel_colors[i][j] += ray_color(ray, camera.max_depth, scene_objects, background_color, lights);
+					pixel_colors[i][j] += ray_color(ray, camera.max_depth, scene_objects, background_color, sample_objects);
 				}
 			}));
 		}
