@@ -107,8 +107,8 @@ scene_object create_sphere(point3 center, double radius, material_enum material,
 
 	// Geometry properties
 	sphere.object_type = SPHERE;
-	sphere.center = center;
-	sphere.radius = radius;
+	sphere.sphere_center = center;
+	sphere.sphere_radius = radius;
 	sphere.sphere_area = 4.0 * pi * (radius * radius);
 
 	// Material properties
@@ -255,10 +255,10 @@ bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, con
 	const glm::dvec3& ray_direction = ray.direction;
 	const glm::dvec3& ray_origin = ray.origin;
 
-	const glm::dvec3& oc = ray_origin - sphere.center;
+	const glm::dvec3& oc = ray_origin - sphere.sphere_center;
 	double a = glm::dot(ray_direction, ray_direction);
 	double half_b = glm::dot(oc, ray_direction);
-	double c = glm::dot(oc, oc) - sphere.radius * sphere.radius;
+	double c = glm::dot(oc, oc) - sphere.sphere_radius * sphere.sphere_radius;
 
 	// The terms under the root in the quadratic formula for sphere intersection
 	// Negative values gives no real solution i.e. no intersection
@@ -283,7 +283,7 @@ bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, con
 	rec.time = root;
 	rec.point = ray_at(ray, rec.time);
 
-	glm::dvec3 outward_normal = (rec.point - sphere.center) / sphere.radius;
+	glm::dvec3 outward_normal = (rec.point - sphere.sphere_center) / sphere.sphere_radius;
 	set_face_normal(ray, outward_normal, rec);
 
 	return true;

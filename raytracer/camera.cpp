@@ -163,7 +163,7 @@ void render(camera& camera) {
 	color background_color;
 	std::vector<scene_object> scene_objects = create_scene(camera, background_color); // Set up scene objects, camera, background color
 
-	// Get the lights in the scene by filtering them out of all scene objects
+	// Get the sample objects in the scene by filtering them out of all scene objects
 	std::vector<scene_object> sample_objects = create_scene(camera, background_color); 
 	for (auto it = sample_objects.begin(); it != sample_objects.end();) {
 		if (it->material != DIELECTRIC && it->material != LIGHT) {
@@ -188,7 +188,7 @@ void render(camera& camera) {
 	for (int i = 0; i < camera.image_height; i++) {
 		for (int j = 0; j < camera.image_width; j++) {
 			// Aysnchronous processing of pixels
-			// Add a thread that computes the multi-sampled pixel color using a lambda function
+			// Add a thread that computes the multi-sampled pixel color
 			futures.emplace_back(std::async(std::launch::async, [=, &camera, &scene_objects, &output, &pixel_colors]() {
 				color pixel_color(0.0f, 0.0f, 0.0f); // Initial color for each pixel
 				re_seed_random_generator(); // Re-seed each thread

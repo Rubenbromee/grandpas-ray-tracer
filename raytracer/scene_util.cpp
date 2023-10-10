@@ -429,7 +429,7 @@ void create_scene_12(std::vector<scene_object>& scene_objects, camera& camera, c
 	add_dielectric_sphere_to_scene(scene_objects, point3(10.0, -29.0, -85.0), 20.0, 1.5, true);
 }
 
-// Cornell box with colored caustics
+// Cornell box with multiple colored caustics
 void create_scene_13(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
 	camera.aspect_ratio = 1.0;
 	camera.look_from = point3(0.0, 0.0, -1.0);

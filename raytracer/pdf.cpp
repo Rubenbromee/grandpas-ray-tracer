@@ -6,28 +6,30 @@
 #include "util.h"
 #include "ray.h"
 
-// Samples towards a light in the scene
-double intersectable_pdf(point3 origin, glm::dvec3 light_direction, const scene_object& light, const hit_record& rec, const point3 random_point_on_light) {
+// Calculates the pdf of an intersectable based on the distance to it and its surface area
+double intersectable_pdf(point3 origin, glm::dvec3 sample_object_direction, const scene_object& sample_object, const hit_record& rec, const point3 random_point_on_sample_object) {
 	double area = 1.0; // To prevent possible 0 division
 
 	// For the non-quad geometries I'm assuming that half of the light area is visible to the geometry intersection point
 	// This will hopefully be a good enough estimation
-	switch (light.object_type) {
+	switch (sample_object.object_type) {
 	case SPHERE:
-		area = light.sphere_area / 2.0;
+		area = sample_object.sphere_area / 2.0;
 		break;
 	case QUAD:
-		area = light.quad_area;
+		area = sample_object.quad_area;
 		break;
 	case CUBE:
-		area = light.cube_area / 2.0;
+		area = sample_object.cube_area / 2.0;
 		break;
 	case ASYMMETRIC_CUBE:
-		area = light.cube_area / 2.0;
+		area = sample_object.cube_area / 2.0;
 		break;
 	}
-	double distance_squared = glm::distance(rec.point, random_point_on_light) * glm::distance(rec.point, random_point_on_light);
-	double cosine = glm::abs(glm::dot(light_direction, rec.normal) / glm::length(light_direction));
+
+	double distance_squared = glm::distance(rec.point, random_point_on_sample_object) * glm::distance(rec.point, random_point_on_sample_object);
+	double cosine = glm::abs(glm::dot(sample_object_direction, rec.normal) / glm::length(sample_object_direction));
+
 	return distance_squared / (cosine * area);
 }
 
@@ -73,7 +75,6 @@ point3 get_random_point_on_cube(point3 origin, const scene_object& cube, const s
 
 	// Choose a random triangle
 	const triangle& random_triangle = cube.cube_triangles[random_triangle_index];
-
 
 	// Choose a random point on that triangle
 	double u = uniform_distribution(gen);
@@ -138,9 +139,9 @@ point3 get_random_point_on_sphere(point3 origin, const scene_object& sphere, con
 	double phi = acos(2.0 * uniform_distribution(gen) - 1.0); // Random inclination angle in radians
 
 	// Convert spherical coordinates to Cartesian coordinates
-	double x = sphere.center.x + sphere.radius * sin(phi) * cos(theta);
-	double y = sphere.center.y + sphere.radius * sin(phi) * sin(theta);
-	double z = sphere.center.z + sphere.radius * cos(phi);
+	double x = sphere.sphere_center.x + sphere.sphere_radius * sin(phi) * cos(theta);
+	double y = sphere.sphere_center.y + sphere.sphere_radius * sin(phi) * sin(theta);
+	double z = sphere.sphere_center.z + sphere.sphere_radius * cos(phi);
 
 	point3 random_point = point3(x, y, z);
 
@@ -148,7 +149,7 @@ point3 get_random_point_on_sphere(point3 origin, const scene_object& sphere, con
 
 	// If the point is on the far side of the sphere seen from the origin, move it to the near side
 	if (glm::dot(vector_to_random_point, rec.normal) > 0.0) {
-		random_point = random_point + (2.0 * sphere.radius) * (-rec.normal);
+		random_point = random_point + (2.0 * sphere.sphere_radius) * (-rec.normal);
 	}
 
 	return random_point;

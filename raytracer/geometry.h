@@ -55,8 +55,8 @@ struct scene_object {
 	double quad_area;
 
 	// Sphere fields, implicit surface
-	glm::dvec3 center;
-	double radius;
+	glm::dvec3 sphere_center;
+	double sphere_radius;
 	double sphere_area;
 
 	// Cube fields, polygon surface

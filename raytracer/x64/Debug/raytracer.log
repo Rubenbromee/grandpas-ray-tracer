@@ -1,8 +1,18 @@
 ﻿  camera.cpp
 C:\git repos\grandpas-ray-tracer\raytracer\camera.cpp(130,61): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  create_image.cpp
   geometry.cpp
+  main.cpp
+C:\git repos\grandpas-ray-tracer\raytracer\main.cpp(16,12): warning C4244: 'initializing': conversion from '_Rep' to 'int', possible loss of data
+          with
+          [
+              _Rep=__int64
+          ]
+  material.cpp
   pdf.cpp
   scene_util.cpp
+  util.cpp
+C:\git repos\grandpas-ray-tracer\raytracer\util.cpp(22,17): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
   Generating Code...
 C:\git repos\grandpas-ray-tracer\raytracer\camera.cpp(97): warning C4172: returning address of local variable or temporary
 C:\git repos\grandpas-ray-tracer\raytracer\camera.cpp(160): warning C4715: 'ray_color': not all control paths return a value
