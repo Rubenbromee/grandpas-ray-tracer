@@ -34,7 +34,7 @@ double intersectable_pdf(point3 origin, glm::dvec3 sample_object_direction, cons
 }
 
 // Point the indirect ray towards a random point on a sample object (light, dielectric object), calculate pdf based on distance to object
-void calculate_intersectable_pdf(const scene_object& sample_object, const hit_record& rec, glm::dvec3& scattered_ray_direction, double& pdf, const std::vector<scene_object> scene_objects) {
+void calculate_intersectable_pdf(const scene_object& sample_object, const hit_record& rec, glm::dvec3& scattered_ray_direction, double& pdf, const std::vector<scene_object>& scene_objects) {
 	point3 random_point_on_sample_object;
 
 	switch (sample_object.object_type) {
@@ -64,7 +64,7 @@ double cosine_pdf(const glm::dvec3& normal, const glm::dvec3& random_direction) 
 }
 
 // Used for sampling cube light sources
-point3 get_random_point_on_cube(point3 origin, const scene_object& cube, const std::vector<scene_object> scene_objects) {
+point3 get_random_point_on_cube(point3 origin, const scene_object& cube, const std::vector<scene_object>& scene_objects) {
 	std::random_device rd;
 	std::mt19937 gen(rd());
 
@@ -89,7 +89,7 @@ point3 get_random_point_on_cube(point3 origin, const scene_object& cube, const s
 
 	glm::dvec3 vector_to_random_point = random_point_on_cube - origin;
 
-	// If this dot product is negative it means we've hit the far side of the cube, seen from the origin, and want to reflect the point to the near side
+	// If this dot product is positive it means we've hit the far side of the cube, seen from the origin, and want to reflect the point to the near side
 	// Do so by finding the intersection in the negative normal direction
 	if (glm::dot(vector_to_random_point, random_triangle.normal) > 0.0) {
 		hit_record rec;

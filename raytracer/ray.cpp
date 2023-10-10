@@ -16,7 +16,7 @@ const point3& ray_at(ray ray, double time) {
 }
 
 // Creates a random direcitonal vector based on the normal of a point
-// Adjusts direction based on the normals hemisphere
+// Adjusts direction based on the normal of the hemisphere
 glm::dvec3 random_hemispherical_direction(const glm::dvec3& normal) {
 
 	// Generate random spherical coordinates in a full hemisphere

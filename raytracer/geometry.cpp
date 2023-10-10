@@ -642,6 +642,73 @@ double calculate_quad_area(const scene_object& quad) {
 	return total_area;
 }
 
+bool sphere_contains_point(const scene_object& sphere, const point3& point) {
+	double distance_between_sphere_and_point = glm::sqrt(
+		(point.x - sphere.sphere_center.x) * (point.x - sphere.sphere_center.x) +
+		(point.y - sphere.sphere_center.y) * (point.y - sphere.sphere_center.y) +
+		(point.z - sphere.sphere_center.z) * (point.z - sphere.sphere_center.z)
+	);
+
+	bool contains = distance_between_sphere_and_point <= sphere.sphere_radius;
+
+	return contains;
+}
+
+bool quad_contains_point(const scene_object& quad, const point3& point) {
+	point3 min_bounds = { infinity, infinity, infinity };
+	point3 max_bounds = { -infinity, -infinity, -infinity };
+
+	for (int i = 0; i < quad.nr_quad_triangles; i++) {
+		const triangle& triangle = quad.quad_triangles[i];
+
+		for (int j = 0; j < 3; j++) {
+			min_bounds.x = std::min(min_bounds.x, triangle.vertices[j].x);
+			min_bounds.y = std::min(min_bounds.y, triangle.vertices[j].y);
+			min_bounds.z = std::min(min_bounds.z, triangle.vertices[j].z);
+
+			max_bounds.x = std::max(max_bounds.x, triangle.vertices[j].x);
+			max_bounds.y = std::max(max_bounds.y, triangle.vertices[j].y);
+			max_bounds.z = std::max(max_bounds.z, triangle.vertices[j].z);
+		}
+	}
+
+	// Have some wiggle room for quads, make them a thin asymmetric cube to have a chance for density scattering
+	min_bounds -= 0.05 * min_bounds;
+	max_bounds += 0.05 * max_bounds;
+
+
+	bool contains = point.x >= min_bounds.x && point.x <= max_bounds.x &&
+		point.y >= min_bounds.y && point.y <= max_bounds.y &&
+		point.z >= min_bounds.z && point.z <= max_bounds.z;
+
+	return contains;
+}
+
+bool cube_contains_point(const scene_object& cube, const point3& point) {
+	point3 min_bounds = { infinity, infinity, infinity };
+	point3 max_bounds = { -infinity, -infinity, -infinity };
+
+	for (int i = 0; i < cube.nr_cube_triangles; i++) {
+		const triangle& triangle = cube.cube_triangles[i];
+
+		for (int j = 0; j < 3; j++) {
+			min_bounds.x = std::min(min_bounds.x, triangle.vertices[j].x);
+			min_bounds.y = std::min(min_bounds.y, triangle.vertices[j].y);
+			min_bounds.z = std::min(min_bounds.z, triangle.vertices[j].z);
+
+			max_bounds.x = std::max(max_bounds.x, triangle.vertices[j].x);
+			max_bounds.y = std::max(max_bounds.y, triangle.vertices[j].y);
+			max_bounds.z = std::max(max_bounds.z, triangle.vertices[j].z);
+		}
+	}
+
+	bool contains = point.x >= min_bounds.x && point.x <= max_bounds.x &&
+					point.y >= min_bounds.y && point.y <= max_bounds.y &&
+					point.z >= min_bounds.z && point.z <= max_bounds.z;
+
+	return contains;
+}
+
 // Print utilities
 
 std::ostream& print_triangle(std::ostream& os, triangle triangle) {

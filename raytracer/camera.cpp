@@ -108,7 +108,11 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 	}
 
 	// If no intersection is found, return background color
-	if (!find_intersection(ray_in, initial_ray_time_interval, rec, scene_objects)) {
+
+	bool hit_anything = false;
+	const scene_object& intersected_object = find_intersection_return_scene_object(ray_in, initial_ray_time_interval, rec, scene_objects, hit_anything);
+
+	if (!hit_anything) {
 		return background_color;
 	}
 
@@ -155,6 +159,12 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 		break;
 	case LIGHT:
 		return rec.material_color;
+		break;
+	case CONSTANT_DENSITY_MEDIUM:
+		if (constant_density_medium_scatter(intersected_object, ray_in, rec, scattered_ray, intersected_object.density, attenuation, scene_objects)) {
+
+			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
+		}
 		break;
 	}
 }

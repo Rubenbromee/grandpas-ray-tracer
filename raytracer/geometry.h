@@ -38,15 +38,16 @@ struct scene_object {
 	// Enum to determine object type
 	object_enum object_type;
 
-	// Light fields, diffuse light
-	// Any geometry can be a light
-	color diffuse_light_color;
-
 	// Material properties, defaults to grey lambertian geometry
 	material_enum material;
 	color material_color;
 	double metal_fuzz;
 	double refraction_index;
+
+	// Sphere fields, implicit surface
+	glm::dvec3 sphere_center;
+	double sphere_radius;
+	double sphere_area;
 
 	// Quad fields, polygon surface
 	size_t nr_quad_triangles = 2;
@@ -54,16 +55,14 @@ struct scene_object {
 	point3 quad_center;
 	double quad_area;
 
-	// Sphere fields, implicit surface
-	glm::dvec3 sphere_center;
-	double sphere_radius;
-	double sphere_area;
-
 	// Cube fields, polygon surface
 	size_t nr_cube_triangles = 12;
 	triangle cube_triangles[12];
 	point3 cube_center;
 	double cube_area;
+
+	// Constant density medium fields, probabilistic density
+	double density;
 };
 
 scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
@@ -96,6 +95,10 @@ void rotate_quad_z(scene_object& quad, double angle);
 
 double calculate_cube_area(const scene_object& cube);
 double calculate_quad_area(const scene_object& quad);
+
+bool sphere_contains_point(const scene_object& sphere, const point3& point);
+bool quad_contains_point(const scene_object& quad, const point3& point);
+bool cube_contains_point(const scene_object& cube, const point3& point);
 
 std::ostream& print_triangle(std::ostream& os, triangle triangle);
 std::ostream& print_cube(std::ostream& os, scene_object cube, point3 cube_center, double cube_size);
