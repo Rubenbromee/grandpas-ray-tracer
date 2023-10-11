@@ -211,15 +211,17 @@ void add_asymmetric_cube_light_to_scene(std::vector<scene_object>& scene_objects
 }
 
 void add_spherical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double radius, color color, double density) {
-	scene_object sphere = create_sphere(center, radius, CONSTANT_DENSITY_MEDIUM, color);
-	sphere.density = density;
+	scene_object sphere = create_sphere(center, radius, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
 
-	scene_objects.push_back(sphere);
+	scene_object constant_density_medium = create_constant_density_medium(new scene_object(sphere), 0.01, color);
+
+	scene_objects.push_back(constant_density_medium);
 }
 
 void add_quad_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color color, double density, double x_rotation, double y_rotation, double z_rotation) {
-	scene_object quad = create_quad(top_left, top_right, bottom_left, bottom_right, CONSTANT_DENSITY_MEDIUM, color);
-	quad.density = density;
+	scene_object quad = create_quad(top_left, top_right, bottom_left, bottom_right, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
+
+	scene_object constant_density_medium = create_constant_density_medium(new scene_object(quad), 0.01, color);
 
 	if (x_rotation != 0.0) {
 		rotate_quad_x(quad, x_rotation);
@@ -231,12 +233,11 @@ void add_quad_constant_density_medium_to_scene(std::vector<scene_object>& scene_
 		rotate_quad_z(quad, z_rotation);
 	}
 
-	scene_objects.push_back(quad);
+	scene_objects.push_back(constant_density_medium);
 }
 
 void add_cubical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color, double density, double x_rotation, double y_rotation, double z_rotation) {
-	scene_object cube = create_cube(center, size, CONSTANT_DENSITY_MEDIUM, color);
-	cube.density = density;
+	scene_object cube = create_cube(center, size, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
 
 	if (x_rotation != 0.0) {
 		rotate_cube_x(cube, x_rotation);
@@ -248,12 +249,13 @@ void add_cubical_constant_density_medium_to_scene(std::vector<scene_object>& sce
 		rotate_cube_z(cube, z_rotation);
 	}
 
-	scene_objects.push_back(cube);
+	scene_object constant_density_medium = create_constant_density_medium(new scene_object(cube), 0.01, color);
+
+	scene_objects.push_back(constant_density_medium);
 }
 
 void add_asymmetric_cubical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double width, double height, double depth, color color, double density, double x_rotation, double y_rotation, double z_rotation) {
-	scene_object cube = create_asymmetric_cube(center, width, height, depth, CONSTANT_DENSITY_MEDIUM, color);
-	cube.density = density;
+	scene_object cube = create_asymmetric_cube(center, width, height, depth, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
 
 	if (x_rotation != 0.0) {
 		rotate_cube_x(cube, x_rotation);
@@ -265,7 +267,9 @@ void add_asymmetric_cubical_constant_density_medium_to_scene(std::vector<scene_o
 		rotate_cube_z(cube, z_rotation);
 	}
 
-	scene_objects.push_back(cube);
+	scene_object constant_density_medium = create_constant_density_medium(new scene_object(cube), 0.01, color);
+
+	scene_objects.push_back(constant_density_medium);
 }
 
 // Utility functions to create different scenes

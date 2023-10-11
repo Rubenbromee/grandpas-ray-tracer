@@ -244,6 +244,15 @@ scene_object create_asymmetric_cube(point3 center, double width, double height, 
 	return asymmetric_cube;
 }
 
+scene_object create_constant_density_medium(scene_object* boundrary_volume, double density, color color) {
+	scene_object constant_density_medium;
+	constant_density_medium.object_type = CONSTANT_DENSITY_MEDIUM;
+	constant_density_medium.boundrary_volume = boundrary_volume;
+	constant_density_medium.density = density;
+	constant_density_medium.material_color = color;
+	return constant_density_medium;
+}
+
 // To set face normal for geometries
 void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_record& rec) {
 	rec.outward_face = glm::dot(ray.direction, outward_normal) < 0;
@@ -375,6 +384,90 @@ bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 	return hit_triangle;
 }
 
+bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object& constant_density_medium) {
+	hit_record rec_first_intersection, rec_second_intersection;
+
+	switch (constant_density_medium.boundrary_volume->object_type) {
+		case SPHERE:
+			if (!sphere_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
+				return false;
+			}
+			if (!sphere_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
+				return false;
+			}
+		break;
+		case QUAD:
+			if (!quad_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
+				return false;
+			}
+			if (!quad_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
+				return false;
+			}
+		break;
+		case CUBE:
+			if (!cube_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
+				return false;
+			}
+			if (!cube_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
+				return false;
+			}
+		break;
+		case ASYMMETRIC_CUBE:
+			if (!cube_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
+				return false;
+			}
+			if (!cube_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
+				return false;
+			}
+		break;
+	}
+
+	rec_first_intersection.material = constant_density_medium.boundrary_volume->material;
+	rec_first_intersection.material_color = constant_density_medium.boundrary_volume->material_color;
+	rec_first_intersection.metal_fuzz = constant_density_medium.boundrary_volume->metal_fuzz;
+	rec_first_intersection.refraction_index = constant_density_medium.boundrary_volume->refraction_index;
+
+	rec_second_intersection.material = constant_density_medium.boundrary_volume->material;
+	rec_second_intersection.material_color = constant_density_medium.boundrary_volume->material_color;
+	rec_second_intersection.metal_fuzz = constant_density_medium.boundrary_volume->metal_fuzz;
+	rec_second_intersection.refraction_index = constant_density_medium.boundrary_volume->refraction_index;
+
+	color color = rec_first_intersection.material_color;
+
+	if (rec_first_intersection.time < ray_time.min) {
+		rec_first_intersection.time = ray_time.min;
+	}
+
+	if (rec_second_intersection.time > ray_time.max) {
+		rec_second_intersection.time = ray_time.max;
+	}
+
+	if (rec_first_intersection.time >= rec_second_intersection.time) {
+		return false;
+	}
+
+	if (rec_first_intersection.time < 0) {
+		rec_first_intersection.time = 0;
+	}
+
+	double ray_length = glm::length(ray_in.direction);
+	double distance_inside_boundrary = (rec_second_intersection.time - rec_first_intersection.time) * ray_length;
+	double hit_distance = (-1.0 / constant_density_medium.density) * glm::log(random_double(1e-8, 1.0));
+
+	if (hit_distance > distance_inside_boundrary) {
+		return false;
+	}
+
+	rec.time = rec_first_intersection.time + (hit_distance / ray_length);
+	rec.point = ray_at(ray_in, rec.time);
+
+	rec.normal = glm::dvec3(1.0, 0.0, 0.0);
+	rec.outward_face = true;
+	rec.material_color = color;
+
+	return true;
+}
+
 // Utility function to update hit record
 void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record& rec) {
 	temp_rec.material = obj.material;
@@ -397,33 +490,40 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 		const scene_object& obj = scene_objects[i];
 
 		switch (obj.object_type) {
-		case SPHERE:
-			if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				hit_anything = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
+			case SPHERE:
+				if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 			break;
-		case QUAD:
-			if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				hit_anything = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
+			case QUAD:
+				if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 			break;
-		case CUBE:
-			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				hit_anything = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
+			case CUBE:
+				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 			break;
-		case ASYMMETRIC_CUBE:
-			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				hit_anything = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
+			case ASYMMETRIC_CUBE:
+				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
+			break;
+			case CONSTANT_DENSITY_MEDIUM:
+				if (constant_density_medium_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 			break;
 		}
 	}
@@ -444,37 +544,45 @@ scene_object find_intersection_return_scene_object(const ray& ray, interval init
 		const scene_object& obj = scene_objects[i];
 
 		switch (obj.object_type) {
-		case SPHERE:
-			if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				return_obj = obj;
-				hit_anything = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
+			case SPHERE:
+				if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					return_obj = obj;
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 			break;
-		case QUAD:
-			if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				return_obj = obj;
-				hit_anything = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
+			case QUAD:
+				if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					return_obj = obj;
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 			break;
-		case CUBE:
-			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				return_obj = obj;
-				hit_anything = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
+			case CUBE:
+				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					return_obj = obj;
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 			break;
-		case ASYMMETRIC_CUBE:
-			if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-				return_obj = obj;
-				hit_anything = true;
-				local_ray_time_interval.max = temp_rec.time;
-				update_hit_record(temp_rec, obj, rec);
-			}
+			case ASYMMETRIC_CUBE:
+				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					return_obj = obj;
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
+			break;
+			case CONSTANT_DENSITY_MEDIUM:
+				if (constant_density_medium_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					return_obj = obj;
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 			break;
 		}
 	}

@@ -3,6 +3,7 @@
 #include <future>
 #include <vector>
 #include <algorithm>
+#include <exception>
 #include "camera.h"
 #include "color.h"
 #include "util.h"
@@ -122,49 +123,63 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 
 	// If intersection, check material for emission/ray-traversal
 	switch (rec.material) {
-	case LAMBERTIAN:
-		if (lambertian_scatter(ray_in, rec, attenuation, scattered_ray, pdf)) {
-			ray scattered_ray;
-			double pdf = 0.0;
-			glm::dvec3 scattered_ray_direction = glm::dvec3(0.0, 0.0, 0.0);
+		case LAMBERTIAN:
+			if (lambertian_scatter(ray_in, rec, attenuation, scattered_ray, pdf)) {
+				ray scattered_ray;
+				double pdf = 0.0;
+				glm::dvec3 scattered_ray_direction = glm::dvec3(0.0, 0.0, 0.0);
 			
-			// 50/50 mixture of intersectable pdf and cosine pdf unless there are no sample objects, then just use cosine pdf
-			if (sample_objects.size() > 0 && random_double() < 0.5) {
-				// Choose random sample object (light, dielectric, etc.)
-				int random_index = random_int(0, (sample_objects.size() - 1));
-				const scene_object& sample_object = sample_objects[random_index];
+				// 50/50 mixture of intersectable pdf and cosine pdf unless there are no sample objects, then just use cosine pdf
+				if (sample_objects.size() > 0 && random_double() < 0.5) {
+					// Choose random sample object (light, dielectric, etc.)
+					int random_index = random_int(0, (sample_objects.size() - 1));
+					const scene_object& sample_object = sample_objects[random_index];
 
-				calculate_intersectable_pdf(sample_object, rec, scattered_ray_direction, pdf, scene_objects);
+					calculate_intersectable_pdf(sample_object, rec, scattered_ray_direction, pdf, scene_objects);
+				}
+				else {
+					onb onb = build_onb_from_w(rec.normal);
+					glm::dvec3 random_direction = random_hemispherical_direction(rec.normal);
+					scattered_ray = create_ray(rec.point, random_direction);
+					pdf = cosine_pdf(rec.normal, random_direction);
+				}
+
+				//std::cout << "emitted(rec): ";
+				//std::cout << std::endl;
+				//std::cout << emitted(rec).x << emitted(rec).y << emitted(rec).z;
+				//std::cout << std::endl;
+				//std::cout << "lambertian_scatter_pdf: " << lambertian_scatter_pdf(ray_in, rec, scattered_ray);
+
+				//try {
+				//	color test = emitted(rec) + attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) *
+				//		ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects) / pdf;
+				//}
+				//catch (const std::exception& e) {
+				//	std::cerr << "Exception: " << e.what() << std::endl;
+				//}
+
+				return emitted(rec) + attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) *
+					ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects) / pdf;
+
 			}
-			else {
-				onb onb = build_onb_from_w(rec.normal);
-				glm::dvec3 random_direction = random_hemispherical_direction(rec.normal);
-				scattered_ray = create_ray(rec.point, random_direction);
-				pdf = cosine_pdf(rec.normal, random_direction);
+		break;
+		case METAL:
+			if (metallic_reflection(ray_in, rec, attenuation, scattered_ray, rec.metal_fuzz)) {
+				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
 			}
-
-			return emitted(rec) + attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) *
-				ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects) / pdf;
-		}
 		break;
-	case METAL:
-		if (metallic_reflection(ray_in, rec, attenuation, scattered_ray, rec.metal_fuzz)) {
-			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
-		}
+		case DIELECTRIC:
+			if (dielectric_refraction(ray_in, rec, attenuation, scattered_ray, rec.refraction_index)) {
+				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
+			}
 		break;
-	case DIELECTRIC:
-		if (dielectric_refraction(ray_in, rec, attenuation, scattered_ray, rec.refraction_index)) {
-			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
-		}
+		case LIGHT:
+			return rec.material_color;
 		break;
-	case LIGHT:
-		return rec.material_color;
-		break;
-	case CONSTANT_DENSITY_MEDIUM:
-		if (constant_density_medium_scatter(intersected_object, ray_in, rec, scattered_ray, intersected_object.density, attenuation, scene_objects)) {
-
-			return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
-		}
+		case CONSTANT_DENSITY_MEDIUM_MATERIAL:
+			if (constant_density_medium_scatter(rec, attenuation, scattered_ray)) {
+				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
+			}
 		break;
 	}
 }

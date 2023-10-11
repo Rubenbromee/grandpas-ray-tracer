@@ -74,75 +74,9 @@ bool dielectric_refraction(const ray& ray_in, const hit_record& rec, color& atte
 	return true;
 }
 
-// Scatters probabilistically depending on medium density
-bool constant_density_medium_scatter(const scene_object& intersected_object, const ray& ray_in, hit_record& rec, ray& ray_out, double density, color& attenuation, const std::vector<scene_object>& scene_objects) {
-	// Get a random hit distance depending on density, if intersection point + hit distance is outside of bounding box for the geometry the ray passes through
-	// Otherwise, it uniformly scatters from intersection point + hit distance
-	
-	double hit_distance = (-1.0 / density) * glm::log(random_double(1e-8, 1.0));
-
-	// std::cout << "Hit distance: " << hit_distance << std::endl;
-
-	point3 evaluation_point = rec.point + (ray_in.direction * hit_distance);
-
-	bool contains = false;
-	point3 random_point_on_intersected_object;
-
-	switch (intersected_object.object_type) {
-		case SPHERE:
-			contains = sphere_contains_point(intersected_object, evaluation_point);
-			random_point_on_intersected_object = get_random_point_on_sphere(rec.point, intersected_object, rec);
-		break;
-		case QUAD:
-			contains = quad_contains_point(intersected_object, evaluation_point);
-			random_point_on_intersected_object = get_random_point_on_quad(rec.point, intersected_object);
-		break;
-		case CUBE:
-			contains = cube_contains_point(intersected_object, evaluation_point);
-			random_point_on_intersected_object = get_random_point_on_cube(rec.point, intersected_object, scene_objects);
-		break;
-		case ASYMMETRIC_CUBE:
-			contains = cube_contains_point(intersected_object, evaluation_point);
-			random_point_on_intersected_object = get_random_point_on_cube(rec.point, intersected_object, scene_objects);
-		break;
-	}
-
-	// If density scattering should occur scatter uniformly from evaluation point and set color
-	if (contains) {
-		std::cout << "Evaluation point: ";
-		print_vector(std::cout, evaluation_point);
-		std::cout << std::endl;
-		std::cout << "Sphere center: ";
-		print_vector(std::cout, intersected_object.sphere_center);
-		std::cout << std::endl;
-
-		attenuation = rec.material_color;
-
-		glm::dvec3 random_direction = random_cosine_direction();
-
-		ray_out = create_ray(evaluation_point, random_direction);
-
-		hit_record rec_second_intersection;
-		find_intersection(ray_out, interval{ 0.001, infinity }, rec_second_intersection, scene_objects);
-
-		// If second intersection from the inside, move passthrough ray to far side
-		if (glm::dot(ray_out.direction, rec_second_intersection.normal) > 0.0) {
-			rec.point = rec_second_intersection.point;
-			ray_out = create_ray(rec_second_intersection.point, random_direction);
-		}
-		
-	}
-	else {
-		hit_record rec_second_intersection;
-		find_intersection(ray_in, interval{ 0.001, infinity }, rec_second_intersection, scene_objects);
-
-		// If second intersection from the inside, move passthrough ray to far side
-		if (glm::dot(ray_in.direction, rec_second_intersection.normal) > 0.0) {
-			rec.point = rec_second_intersection.point;
-			ray_out = create_ray(rec_second_intersection.point, ray_in.direction);
-		}
-	}
-
+//Here
+bool constant_density_medium_scatter(const hit_record& rec, color& attenuation, ray& ray_out) {
+	ray_out = create_ray(rec.point, random_hemispherical_direction(rec.normal));
+	attenuation = rec.material_color;
 	return true;
-
 }
