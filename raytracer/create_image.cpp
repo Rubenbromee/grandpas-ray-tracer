@@ -12,7 +12,7 @@ void create_image() {
 	// Scene-specific camera configurations are done in scene_util.cpp
 	camera cam;
 
-	cam.image_width = 600;
+	cam.image_width = 1200;
 	cam.samples_per_pixel = 100;
 	cam.max_depth = 10;
 

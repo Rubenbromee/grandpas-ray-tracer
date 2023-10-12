@@ -5,6 +5,7 @@ C:\git repos\grandpas-ray-tracer\raytracer\geometry.cpp;C:\git repos\grandpas-ra
 C:\git repos\grandpas-ray-tracer\raytracer\main.cpp;C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\main.obj
 C:\git repos\grandpas-ray-tracer\raytracer\material.cpp;C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\material.obj
 C:\git repos\grandpas-ray-tracer\raytracer\pdf.cpp;C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\pdf.obj
+C:\git repos\grandpas-ray-tracer\raytracer\post_processing.cpp;C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\post_processing.obj
 C:\git repos\grandpas-ray-tracer\raytracer\ray.cpp;C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\ray.obj
 C:\git repos\grandpas-ray-tracer\raytracer\scene_util.cpp;C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\scene_util.obj
 C:\git repos\grandpas-ray-tracer\raytracer\util.cpp;C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\util.obj
