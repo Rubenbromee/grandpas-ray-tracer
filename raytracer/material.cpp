@@ -76,7 +76,7 @@ bool dielectric_refraction(const ray& ray_in, const hit_record& rec, color& atte
 
 //Here
 bool constant_density_medium_scatter(const hit_record& rec, color& attenuation, ray& ray_out) {
-	ray_out = create_ray(rec.point, random_hemispherical_direction(rec.normal));
+	ray_out = create_ray(rec.point, glm::normalize(random_hemispherical_direction(rec.normal)));
 	attenuation = rec.material_color;
 	return true;
 }

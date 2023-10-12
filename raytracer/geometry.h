@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <vector>
+#include <memory>
 #include "ray.h"
 #include "glm.hpp"
 #include "material.h"
@@ -64,7 +65,7 @@ struct scene_object {
 
 	// Constant density medium fields, probabilistic density
 	double density;
-	scene_object* boundrary_volume;
+	std::shared_ptr<scene_object> boundrary_volume;
 };
 
 scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
@@ -72,7 +73,7 @@ scene_object create_quad(point3 center, double width, double height, material_en
 scene_object create_sphere(point3 center, double radius, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 scene_object create_cube(point3 center, double size, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 scene_object create_asymmetric_cube(point3 center, double width, double height, double depth, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
-scene_object create_constant_density_medium(scene_object* boundrary_volume, double density = 0.01, color color = glm::dvec3(0.5, 0.5, 0.5));
+scene_object create_constant_density_medium(std::shared_ptr<scene_object> boundrary_volume, double density = 0.01, color color = glm::dvec3(0.5, 0.5, 0.5));
 
 void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_record& rec);
 bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& sphere);

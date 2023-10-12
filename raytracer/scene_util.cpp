@@ -1,3 +1,4 @@
+#include <memory>
 #include "scene_util.h"
 #include "util.h"
 #include "glm.hpp"
@@ -212,16 +213,15 @@ void add_asymmetric_cube_light_to_scene(std::vector<scene_object>& scene_objects
 
 void add_spherical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double radius, color color, double density) {
 	scene_object sphere = create_sphere(center, radius, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
+	std::shared_ptr<scene_object> sphere_ = std::make_shared<scene_object>(sphere);
 
-	scene_object constant_density_medium = create_constant_density_medium(new scene_object(sphere), 0.01, color);
+	scene_object constant_density_medium = create_constant_density_medium(sphere_, density, color);
 
 	scene_objects.push_back(constant_density_medium);
 }
 
 void add_quad_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color color, double density, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object quad = create_quad(top_left, top_right, bottom_left, bottom_right, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
-
-	scene_object constant_density_medium = create_constant_density_medium(new scene_object(quad), 0.01, color);
 
 	if (x_rotation != 0.0) {
 		rotate_quad_x(quad, x_rotation);
@@ -233,12 +233,15 @@ void add_quad_constant_density_medium_to_scene(std::vector<scene_object>& scene_
 		rotate_quad_z(quad, z_rotation);
 	}
 
+	std::shared_ptr<scene_object> quad_ = std::make_shared<scene_object>(quad);
+	scene_object constant_density_medium = create_constant_density_medium(quad_, density, color);
+
 	scene_objects.push_back(constant_density_medium);
 }
 
 void add_cubical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color, double density, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object cube = create_cube(center, size, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
-
+	
 	if (x_rotation != 0.0) {
 		rotate_cube_x(cube, x_rotation);
 	}
@@ -249,7 +252,8 @@ void add_cubical_constant_density_medium_to_scene(std::vector<scene_object>& sce
 		rotate_cube_z(cube, z_rotation);
 	}
 
-	scene_object constant_density_medium = create_constant_density_medium(new scene_object(cube), 0.01, color);
+	std::shared_ptr<scene_object> cube_ = std::make_shared<scene_object>(cube);
+	scene_object constant_density_medium = create_constant_density_medium(cube_, density, color);
 
 	scene_objects.push_back(constant_density_medium);
 }
@@ -267,7 +271,8 @@ void add_asymmetric_cubical_constant_density_medium_to_scene(std::vector<scene_o
 		rotate_cube_z(cube, z_rotation);
 	}
 
-	scene_object constant_density_medium = create_constant_density_medium(new scene_object(cube), 0.01, color);
+	std::shared_ptr<scene_object> cube_ = std::make_shared<scene_object>(cube);
+	scene_object constant_density_medium = create_constant_density_medium(cube_, density, color);
 
 	scene_objects.push_back(constant_density_medium);
 }
@@ -566,14 +571,15 @@ void create_scene_16(std::vector<scene_object>& scene_objects, camera& camera, c
 	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(-50.0, -50.0, -150.0), color(0.12, 0.45, 0.15)); // Right wall (green)
 	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
 	add_quad_light_to_scene(scene_objects, point3(-15.0, 49.9, -85.0), point3(15.0, 49.9, -85.0), point3(-15.0, 49.9, -115.0), point3(15.0, 49.9, -115.0), color(15.0, 15.0, 15.0)); // Light
-
-	add_spherical_constant_density_medium_to_scene(scene_objects, point3(0.0, 0.0, -100.0), 20.0, color(1.0, 1.0, 1.0), 0.1);
-
+	// Adjust densitys
+	add_spherical_constant_density_medium_to_scene(scene_objects, point3(-15.0, 0.0, -100.0), 20.0, color(1.0, 0.0, 0.0), 0.03);
+	add_spherical_constant_density_medium_to_scene(scene_objects, point3(0.0, 0.0, -100.0), 20.0, color(0.0, 1.0, 0.0), 0.03);
+	add_spherical_constant_density_medium_to_scene(scene_objects, point3(15.0, 0.0, -100.0), 20.0, color(0.0, 0.0, 1.0), 0.03);
 }
 
 // Populate scene with geometries, change which scene is rendered here
 std::vector<scene_object> create_scene(camera& camera, color& background_color) {
 	std::vector<scene_object> scene_objects = std::vector<scene_object>();
-	create_scene_16(scene_objects, camera, background_color);
+	create_scene_5(scene_objects, camera, background_color);
 	return scene_objects;
 }

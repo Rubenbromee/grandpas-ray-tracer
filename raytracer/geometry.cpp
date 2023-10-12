@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include "geometry.h"
 #include "glm.hpp"
 #include "util.h"
@@ -244,9 +245,10 @@ scene_object create_asymmetric_cube(point3 center, double width, double height, 
 	return asymmetric_cube;
 }
 
-scene_object create_constant_density_medium(scene_object* boundrary_volume, double density, color color) {
+scene_object create_constant_density_medium(std::shared_ptr<scene_object> boundrary_volume, double density, color color) {
 	scene_object constant_density_medium;
 	constant_density_medium.object_type = CONSTANT_DENSITY_MEDIUM;
+	constant_density_medium.material = CONSTANT_DENSITY_MEDIUM_MATERIAL;
 	constant_density_medium.boundrary_volume = boundrary_volume;
 	constant_density_medium.density = density;
 	constant_density_medium.material_color = color;
@@ -452,7 +454,7 @@ bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, 
 
 	double ray_length = glm::length(ray_in.direction);
 	double distance_inside_boundrary = (rec_second_intersection.time - rec_first_intersection.time) * ray_length;
-	double hit_distance = (-1.0 / constant_density_medium.density) * glm::log(random_double(1e-8, 1.0));
+	double hit_distance =  (-1.0 / constant_density_medium.density) * glm::log(random_double(1e-8, 1.0));
 
 	if (hit_distance > distance_inside_boundrary) {
 		return false;
