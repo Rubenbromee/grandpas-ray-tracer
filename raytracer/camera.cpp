@@ -3,13 +3,12 @@
 #include <future>
 #include <vector>
 #include <algorithm>
-#include <exception>
 #include "camera.h"
 #include "color.h"
 #include "util.h"
 #include "geometry.h"
 #include "material.h"
-#include "scene_util.h"
+#include "scene_creation.h"
 #include "glm.hpp"
 #include "pdf.h"
 #include "post_processing.h"
@@ -46,7 +45,6 @@ void initialize(camera& camera) {
 	camera.center = camera.look_from;
 
 	// Viewport dimensions
-	// double focal_length = glm::length(camera.look_from - camera.look_at);
 	double theta = degrees_to_radians(camera.vertical_field_of_view);
 	double height = std::tan(theta / 2);
 	double viewport_height = 2.0 * height * camera.focus_distance;
@@ -109,12 +107,8 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 		return color(0.0, 0.0, 0.0);
 	}
 
-	// If no intersection is found, return background color
-
-	bool hit_anything = false;
-	const scene_object& intersected_object = find_intersection_return_scene_object(ray_in, initial_ray_time_interval, rec, scene_objects, hit_anything);
-
-	if (!hit_anything) {
+	// Look for intersection in scene, if no intersection is found, return background color
+	if (!find_intersection(ray_in, initial_ray_time_interval, rec, scene_objects)) {
 		return background_color;
 	}
 
@@ -138,22 +132,19 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 
 					calculate_intersectable_pdf(sample_object, rec, scattered_ray_direction, pdf, scene_objects);
 
+					// Sample ray towards intersectable
 					scattered_ray = create_ray(rec.point, scattered_ray_direction);
 				}
 				else {
-					onb onb = build_onb_from_w(rec.normal);
+					// Sample ray in a random direction
 					glm::dvec3 random_direction = random_hemispherical_direction(rec.normal);
 					scattered_ray = create_ray(rec.point, random_direction);
+
 					pdf = cosine_pdf(rec.normal, random_direction);
 				}
 
-				//if (depth == 9) {
-				//	ray_color_debug(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
-				//}
-
-				return emitted(rec) + attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) *
+				return attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) *
 					ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects) / pdf;
-
 			}
 		break;
 		case METAL:
@@ -177,9 +168,8 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 	}
 }
 
-
 void render(camera& camera) {
-	color background_color;
+	color background_color = color(0.0, 0.0, 0.0);
 	std::vector<scene_object> scene_objects = create_scene(camera, background_color); // Set up scene objects, camera, background color
 
 	// Get the sample objects in the scene by filtering them out of all scene objects
@@ -193,7 +183,7 @@ void render(camera& camera) {
 		}
 	}
 
-	initialize(camera); // Set up camera, create viewport from scene creation configurations
+	initialize(camera); // Set up camera, create viewport from scene creation configurations or default configuration
 
 	std::ofstream output("output.ppm"); // Initialize output stream to ppm file
 
@@ -213,7 +203,7 @@ void render(camera& camera) {
 				re_seed_random_generator(); // Re-seed each thread
 
 				// Multi-sample a pixel
-				for (size_t sample = 0; sample < camera.samples_per_pixel; sample++) {
+				for (int sample = 0; sample < camera.samples_per_pixel; sample++) {
 					const ray& ray = get_multisample_ray(i, j, camera);
 					pixel_colors[i][j] += ray_color(ray, camera.max_depth, scene_objects, background_color, sample_objects);
 				}
@@ -227,16 +217,16 @@ void render(camera& camera) {
 	for (std::future<void>& future : futures) {
 		future.wait();
 	}
+	
+	// Log of image width taken from empirical tests
+	double sigma = glm::log(static_cast<double>(camera.image_width)) / 2.0;
 
-	// Make default kernel size 5% of image width
-	int kernel_size = glm::floor(0.05 * camera.image_width);
-	if (kernel_size % 2 == 0) {
-		kernel_size += 1;
-	}
+	// Kernel size formula from: https://medium.com/jun94-devpblog/cv-2-gaussian-and-median-filter-separable-2d-filter-2d11ee022c66
+	int kernel_size = 2 * static_cast<int>(glm::ceil(3.0 * sigma)) + 1;
 
 	// Application of gaussian filter to smooth out image and remove artifacts
 	std::cout << "Applying gaussian filter..." << std::endl;
-	std::vector<std::vector<color>> filtered_pixel_colors = gaussian_filter(pixel_colors, kernel_size, 5.0, camera);
+	std::vector<std::vector<color>> filtered_pixel_colors = gaussian_filter(pixel_colors, kernel_size, sigma, camera);
 
 	// Write pixel values from color matrix to output stream
 	std::cout << "Writing pixel colors from matrix to output stream..." << std::endl;

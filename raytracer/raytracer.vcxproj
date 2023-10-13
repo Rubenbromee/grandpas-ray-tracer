@@ -23,11 +23,14 @@
     <ClInclude Include="color.h" />
     <ClInclude Include="create_image.h" />
     <ClInclude Include="geometry.h" />
+    <ClInclude Include="geometry_rotation.h" />
+    <ClInclude Include="geometry_util.h" />
     <ClInclude Include="material.h" />
     <ClInclude Include="pdf.h" />
     <ClInclude Include="post_processing.h" />
     <ClInclude Include="ray.h" />
-    <ClInclude Include="scene_util.h" />
+    <ClInclude Include="scene_population.h" />
+    <ClInclude Include="scene_creation.h" />
     <ClInclude Include="util.h" />
   </ItemGroup>
   <ItemGroup>
@@ -35,12 +38,15 @@
     <ClCompile Include="color.cpp" />
     <ClCompile Include="create_image.cpp" />
     <ClCompile Include="geometry.cpp" />
+    <ClCompile Include="geometry_rotation.cpp" />
+    <ClCompile Include="geometry_util.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="material.cpp" />
     <ClCompile Include="pdf.cpp" />
     <ClCompile Include="post_processing.cpp" />
     <ClCompile Include="ray.cpp" />
-    <ClCompile Include="scene_util.cpp" />
+    <ClCompile Include="scene_population.cpp" />
+    <ClCompile Include="scene_creation.cpp" />
     <ClCompile Include="util.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

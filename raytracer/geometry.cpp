@@ -4,15 +4,26 @@
 #include "glm.hpp"
 #include "util.h"
 #include "material.h"
-#include "scene_util.h"
 #include "gtc/matrix_transform.hpp"
+#include "geometry_util.h"
 
-// Triangle centers are needed for rotation
-point3 calculate_triangle_center(const triangle& triangle) {
-	// Calculate the average of the vertices' coordinates
-	point3 center = (triangle.vertices[0] + triangle.vertices[1] + triangle.vertices[2]) / 3.0;
+// A sphere is an implicit surface
+scene_object create_sphere(point3 center, double radius, material_enum material, color color, double metal_fuzz, double refraction_index) {
+	scene_object sphere;
 
-	return center;
+	// Geometry properties
+	sphere.object_type = SPHERE;
+	sphere.sphere_center = center;
+	sphere.sphere_radius = radius;
+	sphere.sphere_area = 4.0 * pi * (radius * radius);
+
+	// Material properties
+	sphere.material = material;
+	sphere.material_color = color;
+	sphere.metal_fuzz = metal_fuzz;
+	sphere.refraction_index = refraction_index;
+
+	return sphere;
 }
 
 // A quad is just made up of two triangles, defined by its corner points
@@ -44,7 +55,7 @@ scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, 
 	triangles[1].normal = glm::normalize(glm::cross(triangles[1].vertices[0] - triangles[1].vertices[2], triangles[1].vertices[1] - triangles[1].vertices[2]));
 
 	// Assign the triangles to the quad
-	for (size_t i = 0; i < 2; i++) {
+	for (int i = 0; i < 2; i++) {
 		quad.quad_triangles[i] = triangles[i];
 		quad.quad_triangles[i].center = calculate_triangle_center(quad.quad_triangles[i]);
 	}
@@ -54,7 +65,7 @@ scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, 
 	return quad;
 }
 
-// A quad defined by its width and height instead of explicit corner points
+// A quad defined by a center point, width and height instead of explicit corner points
 scene_object create_quad(point3 center, double width, double height, material_enum material, color color, double metal_fuzz, double refraction_index) {
 	scene_object quad;
 	quad.object_type = QUAD;
@@ -92,7 +103,7 @@ scene_object create_quad(point3 center, double width, double height, material_en
 	triangles[1].normal = glm::normalize(glm::cross(triangles[1].vertices[0] - triangles[1].vertices[2], triangles[1].vertices[1] - triangles[1].vertices[2]));
 
 	// Assign the triangles to the quad
-	for (size_t i = 0; i < 2; i++) {
+	for (int i = 0; i < 2; i++) {
 		quad.quad_triangles[i] = triangles[i];
 		quad.quad_triangles[i].center = calculate_triangle_center(quad.quad_triangles[i]);
 	}
@@ -100,25 +111,6 @@ scene_object create_quad(point3 center, double width, double height, material_en
 	quad.quad_area = calculate_quad_area(quad);
 
 	return quad;
-}
-
-// A sphere is an implicit surface
-scene_object create_sphere(point3 center, double radius, material_enum material, color color, double metal_fuzz, double refraction_index) {
-	scene_object sphere;
-
-	// Geometry properties
-	sphere.object_type = SPHERE;
-	sphere.sphere_center = center;
-	sphere.sphere_radius = radius;
-	sphere.sphere_area = 4.0 * pi * (radius * radius);
-
-	// Material properties
-	sphere.material = material;
-	sphere.material_color = color;
-	sphere.metal_fuzz = metal_fuzz;
-	sphere.refraction_index = refraction_index;
-
-	return sphere;
 }
 
 // A symmetric cube defined by 12 triangles
@@ -129,7 +121,6 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	// Geometric properties
 	cube.object_type = CUBE;
 	cube.cube_center = center;
-
 
 	double half = size * 0.5;
 
@@ -159,7 +150,7 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	};
 
 	// Assign vertices and normal for each triangle in the cube
-	for (size_t i = 0; i < cube.nr_cube_triangles; i++) {
+	for (int i = 0; i < cube.nr_cube_triangles; i++) {
 		const glm::dvec3& v0 = vertices[indices[i * 3]];
 		const glm::dvec3& v1 = vertices[indices[i * 3 + 1]];
 		const glm::dvec3& v2 = vertices[indices[i * 3 + 2]];
@@ -221,7 +212,7 @@ scene_object create_asymmetric_cube(point3 center, double width, double height, 
 	};
 
 	// Assign vertices and normal for each triangle in the cube
-	for (size_t i = 0; i < asymmetric_cube.nr_cube_triangles; i++) {
+	for (int i = 0; i < asymmetric_cube.nr_cube_triangles; i++) {
 		const glm::dvec3& v0 = vertices[indices[i * 3]];
 		const glm::dvec3& v1 = vertices[indices[i * 3 + 1]];
 		const glm::dvec3& v2 = vertices[indices[i * 3 + 2]];
@@ -253,12 +244,6 @@ scene_object create_constant_density_medium(std::shared_ptr<scene_object> boundr
 	constant_density_medium.density = density;
 	constant_density_medium.material_color = color;
 	return constant_density_medium;
-}
-
-// To set face normal for geometries
-void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_record& rec) {
-	rec.outward_face = glm::dot(ray.direction, outward_normal) < 0;
-	rec.normal = rec.outward_face ? outward_normal : -outward_normal;
 }
 
 // Sphere intersection is calculated as intersection with an implicit surface
@@ -363,7 +348,7 @@ bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, c
 
 // Iterate through all triangles in the quad and run triangle intersection test
 bool quad_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& quad) {
-	for (size_t i = 0; i < quad.nr_quad_triangles; i++) {
+	for (int i = 0; i < quad.nr_quad_triangles; i++) {
 		const triangle& triangle = quad.quad_triangles[i];
 		if (triangle_intersection(ray, ray_time, rec, triangle)) {
 			return true;
@@ -375,7 +360,7 @@ bool quad_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 // Iterate through all triangles in the cube and run triangle intersection test
 bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& cube) {
 	bool hit_triangle = false;
-	for (size_t i = 0; i < cube.nr_cube_triangles; i++) {
+	for (int i = 0; i < cube.nr_cube_triangles; i++) {
 		const triangle& triangle = cube.cube_triangles[i];
 		if (triangle_intersection(ray, ray_time, rec, triangle)) {
 			// Update the max-time in the interval to not hit far triangle if multiple are intersected
@@ -386,6 +371,7 @@ bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 	return hit_triangle;
 }
 
+// A constant density medium is both a geometry and a material, it firstly has a probabilistic geometry intersection based on density combined with a uniform scattering implemented in the material
 bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object& constant_density_medium) {
 	hit_record rec_first_intersection, rec_second_intersection;
 
@@ -470,25 +456,15 @@ bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, 
 	return true;
 }
 
-// Utility function to update hit record
-void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record& rec) {
-	temp_rec.material = obj.material;
-	temp_rec.material_color = obj.material_color;
-	temp_rec.metal_fuzz = obj.metal_fuzz;
-	temp_rec.refraction_index = obj.refraction_index;
-
-	rec = temp_rec;
-}
-
 // Iterate through all scene geometries and look for intersection with current ray, returns intersection flag
 bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects) {
-	size_t nr_scene_objects = scene_objects.size();
+	int nr_scene_objects = scene_objects.size();
 	hit_record temp_rec;
 	bool hit_anything = false;
 	double closest_so_far = initial_ray_time_interval.max;
 	interval local_ray_time_interval = { initial_ray_time_interval.min, closest_so_far };
 
-	for (size_t i = 0; i < nr_scene_objects; i++) {
+	for (int i = 0; i < nr_scene_objects; i++) {
 		const scene_object& obj = scene_objects[i];
 
 		switch (obj.object_type) {
@@ -531,323 +507,4 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 	}
 
 	return hit_anything;
-}
-
-// Iterate through all scene geometries and look for intersection with current ray, return the intersected scene object instead of just an intersection flag
-scene_object find_intersection_return_scene_object(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects, bool& hit_anything) {
-	size_t nr_scene_objects = scene_objects.size();
-	hit_record temp_rec;
-	hit_anything = false;
-	double closest_so_far = initial_ray_time_interval.max;
-	interval local_ray_time_interval = { initial_ray_time_interval.min, closest_so_far };
-	scene_object return_obj;
-
-	for (size_t i = 0; i < nr_scene_objects; i++) {
-		const scene_object& obj = scene_objects[i];
-
-		switch (obj.object_type) {
-			case SPHERE:
-				if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					return_obj = obj;
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-			case QUAD:
-				if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					return_obj = obj;
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-			case CUBE:
-				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					return_obj = obj;
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-			case ASYMMETRIC_CUBE:
-				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					return_obj = obj;
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-			case CONSTANT_DENSITY_MEDIUM:
-				if (constant_density_medium_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					return_obj = obj;
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-		}
-	}
-
-	return return_obj;
-}
-
-// Rotation functions for polygons
-
-// Rotates a triangle counter-clockwise along the positive x-axis
-void rotate_triangle_x(triangle& triangle, double angle, point3 center) {
-	angle = glm::radians(angle); // Convert angle to radians
-
-	// Calculate sine and cosine of the angle
-	double cos_angle = cos(angle);
-	double sin_angle = sin(angle);
-
-	// Create the rotation matrix for the x-axis
-	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0), angle, glm::dvec3(1.0, 0.0, 0.0));
-
-	// Translate each vertex so that the triangle center would be in the world origin, rotate, then translate back
-	for (int i = 0; i < 3; i++) {
-		glm::dvec3 relative_vertex = triangle.vertices[i] - center;
-		glm::dvec4 vertex = glm::dvec4(relative_vertex, 1.0);
-		vertex = rotation_matrix * vertex;
-		triangle.vertices[i] = center + glm::dvec3(vertex);
-	}
-
-	// Same procedure with normal as with vertices
-	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
-	normal = rotation_matrix * normal;
-	triangle.normal = glm::dvec3(normal);
-}
-
-// Rotates a triangle counter-clockwise along the positive y-axis
-void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
-	angle = glm::radians(angle); // Convert angle to radians
-
-	// Calculate sine and cosine of the angle
-	double cos_angle = cos(angle);
-	double sin_angle = sin(angle);
-
-	// Create the rotation matrix for the y-axis
-	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0), angle, glm::dvec3(0.0, 1.0, 0.0));
-
-	// Translate each vertex so that the triangle center would be in the world origin, rotate, then translate back
-	for (int i = 0; i < 3; i++) {
-		glm::dvec3 relative_vertex = triangle.vertices[i] - center;
-		glm::dvec4 vertex = glm::dvec4(relative_vertex, 1.0);
-		vertex = rotation_matrix * vertex;
-		triangle.vertices[i] = center + glm::dvec3(vertex);
-	}
-
-	// Same procedure with normal as with vertices
-	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
-	normal = rotation_matrix * normal;
-	triangle.normal = glm::dvec3(normal);
-}
-
-void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
-	angle = glm::radians(angle); // Convert angle to radians
-
-	// Calculate sine and cosine of the angle
-	double cos_angle = cos(angle);
-	double sin_angle = sin(angle);
-
-	// Create the rotation matrix for the z-axis
-	glm::dmat4 rotation_matrix = glm::rotate(glm::dmat4(1.0), angle, glm::dvec3(0.0, 0.0, 1.0));
-
-	// Translate each vertex so that the triangle center would be in the world origin, rotate, then translate back
-	for (int i = 0; i < 3; i++) {
-		glm::dvec3 relative_vertex = triangle.vertices[i] - center;
-		glm::dvec4 vertex = glm::dvec4(relative_vertex, 1.0);
-		vertex = rotation_matrix * vertex;
-		triangle.vertices[i] = center + glm::dvec3(vertex);
-	}
-
-	// Same procedure with normal as with vertices
-	glm::dvec4 normal = glm::dvec4(triangle.normal, 1.0);
-	normal = rotation_matrix * normal;
-	triangle.normal = glm::dvec3(normal);
-}
-
-// For all polygons, just rotate each triangle
-
-void rotate_cube_x(scene_object& cube, double angle) {
-	for (int i = 0; i < cube.nr_cube_triangles; i++) {
-		rotate_triangle_x(cube.cube_triangles[i], angle, cube.cube_center);
-	}
-}
-
-void rotate_cube_y(scene_object& cube, double angle) {
-	for (int i = 0; i < cube.nr_cube_triangles; i++) {
-		rotate_triangle_y(cube.cube_triangles[i], angle, cube.cube_center);
-	}
-}
-
-void rotate_cube_z(scene_object& cube, double angle) {
-	for (int i = 0; i < cube.nr_cube_triangles; i++) {
-		rotate_triangle_z(cube.cube_triangles[i], angle, cube.cube_center);
-	}
-}
-
-void rotate_quad_x(scene_object& quad, double angle) {
-	for (int i = 0; i < quad.nr_quad_triangles; i++) {
-		rotate_triangle_x(quad.quad_triangles[i], angle, point3(0.0, 0.0, 0.0));
-	}
-}
-
-void rotate_quad_y(scene_object& quad, double angle) {
-	for (int i = 0; i < quad.nr_quad_triangles; i++) {
-		rotate_triangle_y(quad.quad_triangles[i], angle, point3(0.0, 0.0, 0.0));
-	}
-}
-
-void rotate_quad_z(scene_object& quad, double angle) {
-	for (int i = 0; i < quad.nr_quad_triangles; i++) {
-		rotate_triangle_z(quad.quad_triangles[i], angle, point3(0.0, 0.0, 0.0));
-	}
-}
-
-// Utility functions for surface area calculations for polygons
-
-double calculate_cube_area(const scene_object& cube) {
-	double total_area = 0.0;
-
-	for (size_t i = 0; i < cube.nr_cube_triangles; i++) {
-		const triangle& triangle = cube.cube_triangles[i];
-
-		// Calculate the area of the triangle using Heron's formula
-		glm::dvec3 a = triangle.vertices[0];
-		glm::dvec3 b = triangle.vertices[1];
-		glm::dvec3 c = triangle.vertices[2];
-		double side_1 = glm::length(b - a);
-		double side_2 = glm::length(c - b);
-		double side_3 = glm::length(a - c);
-		double s = (side_1 + side_2 + side_3) / 2.0;
-		double triangle_area = glm::sqrt(s * (s - side_1) * (s - side_2) * (s - side_3));
-
-		total_area += triangle_area;
-	}
-
-	return total_area;
-}
-
-double calculate_quad_area(const scene_object& quad) {
-	double total_area = 0.0;
-
-	for (size_t i = 0; i < quad.nr_quad_triangles; i++) {
-		const triangle& triangle = quad.quad_triangles[i];
-
-		// Calculate the area of the triangle using Heron's formula
-		glm::dvec3 a = triangle.vertices[0];
-		glm::dvec3 b = triangle.vertices[1];
-		glm::dvec3 c = triangle.vertices[2];
-		double side_1 = glm::length(b - a);
-		double side_2 = glm::length(c - b);
-		double side_3 = glm::length(a - c);
-		double s = (side_1 + side_2 + side_3) / 2.0;
-		double triangle_area = glm::sqrt(s * (s - side_1) * (s - side_2) * (s - side_3));
-
-		total_area += triangle_area;
-	}
-
-	return total_area;
-}
-
-bool sphere_contains_point(const scene_object& sphere, const point3& point) {
-	double distance_between_sphere_and_point = glm::sqrt(
-		(point.x - sphere.sphere_center.x) * (point.x - sphere.sphere_center.x) +
-		(point.y - sphere.sphere_center.y) * (point.y - sphere.sphere_center.y) +
-		(point.z - sphere.sphere_center.z) * (point.z - sphere.sphere_center.z)
-	);
-
-	bool contains = distance_between_sphere_and_point <= sphere.sphere_radius;
-
-	return contains;
-}
-
-bool quad_contains_point(const scene_object& quad, const point3& point) {
-	point3 min_bounds = { infinity, infinity, infinity };
-	point3 max_bounds = { -infinity, -infinity, -infinity };
-
-	for (int i = 0; i < quad.nr_quad_triangles; i++) {
-		const triangle& triangle = quad.quad_triangles[i];
-
-		for (int j = 0; j < 3; j++) {
-			min_bounds.x = std::min(min_bounds.x, triangle.vertices[j].x);
-			min_bounds.y = std::min(min_bounds.y, triangle.vertices[j].y);
-			min_bounds.z = std::min(min_bounds.z, triangle.vertices[j].z);
-
-			max_bounds.x = std::max(max_bounds.x, triangle.vertices[j].x);
-			max_bounds.y = std::max(max_bounds.y, triangle.vertices[j].y);
-			max_bounds.z = std::max(max_bounds.z, triangle.vertices[j].z);
-		}
-	}
-
-	// Have some wiggle room for quads, make them a thin asymmetric cube to have a chance for density scattering
-	min_bounds -= 0.05 * min_bounds;
-	max_bounds += 0.05 * max_bounds;
-
-
-	bool contains = point.x >= min_bounds.x && point.x <= max_bounds.x &&
-		point.y >= min_bounds.y && point.y <= max_bounds.y &&
-		point.z >= min_bounds.z && point.z <= max_bounds.z;
-
-	return contains;
-}
-
-bool cube_contains_point(const scene_object& cube, const point3& point) {
-	point3 min_bounds = { infinity, infinity, infinity };
-	point3 max_bounds = { -infinity, -infinity, -infinity };
-
-	for (int i = 0; i < cube.nr_cube_triangles; i++) {
-		const triangle& triangle = cube.cube_triangles[i];
-
-		for (int j = 0; j < 3; j++) {
-			min_bounds.x = std::min(min_bounds.x, triangle.vertices[j].x);
-			min_bounds.y = std::min(min_bounds.y, triangle.vertices[j].y);
-			min_bounds.z = std::min(min_bounds.z, triangle.vertices[j].z);
-
-			max_bounds.x = std::max(max_bounds.x, triangle.vertices[j].x);
-			max_bounds.y = std::max(max_bounds.y, triangle.vertices[j].y);
-			max_bounds.z = std::max(max_bounds.z, triangle.vertices[j].z);
-		}
-	}
-
-	bool contains = point.x >= min_bounds.x && point.x <= max_bounds.x &&
-					point.y >= min_bounds.y && point.y <= max_bounds.y &&
-					point.z >= min_bounds.z && point.z <= max_bounds.z;
-
-	return contains;
-}
-
-// Print utilities
-
-std::ostream& print_triangle(std::ostream& os, triangle triangle) {
-	os << "Normal: " << "(" << triangle.normal.x << ", " << triangle.normal.y << ", " << triangle.normal.z << ")" << std::endl;
-	os << "Vertices: ";
-	for (size_t i = 0; i < 3; i++) {
-		os << "(" << triangle.vertices[i].x << ", " << triangle.vertices[i].y << ", " << triangle.vertices[i].z << ") ";
-	}
-	os << std::endl;
-	return os;
-}
-
-std::ostream& print_cube(std::ostream& os, scene_object cube, point3 cube_center, double cube_size) {
-	os << "Created cube with center at: " << "(" << cube_center.x << ", " << cube_center.y << ", " << cube_center.z << ")" << std::endl;
-	os << "Size: " << cube_size << std::endl;
-	os << "Triangles: " << std::endl;
-	for (size_t i = 0; i < cube.nr_cube_triangles; i++) {
-		print_triangle(os, cube.cube_triangles[i]);
-	}
-	os << std::endl;
-	return os;
-}
-
-std::ostream& print_asymmetric_cube(std::ostream& os, scene_object cube, point3 cube_center) {
-	os << "Created cube with center at: " << "(" << cube_center.x << ", " << cube_center.y << ", " << cube_center.z << ")" << std::endl;
-	os << "Triangles: " << std::endl;
-	for (size_t i = 0; i < cube.nr_cube_triangles; i++) {
-		print_triangle(os, cube.cube_triangles[i]);
-	}
-	os << std::endl;
-	return os;
 }

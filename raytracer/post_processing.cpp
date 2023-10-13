@@ -3,6 +3,7 @@
 #include "glm.hpp"
 #include "camera.h"
 
+// Gaussian filtering through convolution with a gaussian kernel
 // Kernel size affects area that is averaged, sigma affects "sharpness" of gaussian curve, low sigma: sharp curve, high sigma: rounder curve
 std::vector<std::vector<color>> gaussian_filter(const std::vector<std::vector<color>>& pixel_colors, int kernel_size, double sigma, const camera& camera) {
 	int zero_padding = (kernel_size - 1) / 2; // If kernel size is 3, then kernel is 3 x 3

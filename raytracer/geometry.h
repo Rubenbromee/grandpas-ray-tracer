@@ -35,7 +35,7 @@ enum object_enum {
 	CONSTANT_DENSITY_MEDIUM
 };
 
-// Union type for all scene objects :)
+// Union type for all scene objects
 struct scene_object {
 	// Enum to determine object type
 	object_enum object_type;
@@ -52,13 +52,13 @@ struct scene_object {
 	double sphere_area;
 
 	// Quad fields, polygon surface
-	size_t nr_quad_triangles = 2;
+	int nr_quad_triangles = 2;
 	triangle quad_triangles[2];
 	point3 quad_center;
 	double quad_area;
 
 	// Cube fields, polygon surface
-	size_t nr_cube_triangles = 12;
+	int nr_cube_triangles = 12;
 	triangle cube_triangles[12];
 	point3 cube_center;
 	double cube_area;
@@ -68,43 +68,20 @@ struct scene_object {
 	std::shared_ptr<scene_object> boundrary_volume;
 };
 
+// Geometry creation functions
+scene_object create_sphere(point3 center, double radius, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 scene_object create_quad(point3 center, double width, double height, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
-scene_object create_sphere(point3 center, double radius, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 scene_object create_cube(point3 center, double size, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 scene_object create_asymmetric_cube(point3 center, double width, double height, double depth, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 scene_object create_constant_density_medium(std::shared_ptr<scene_object> boundrary_volume, double density = 0.01, color color = glm::dvec3(0.5, 0.5, 0.5));
 
-void set_face_normal(const ray& ray, const glm::dvec3& outward_normal, hit_record& rec);
+// Geometry intersection functions
 bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& sphere);
 bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, const triangle& triangle);
 bool quad_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& quad);
 bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& cube);
 bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object& constant_density_medium);
 
-void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record& rec);
+// Scene intersection function
 bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects);
-scene_object find_intersection_return_scene_object(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects, bool& hit_anything);
-
-void rotate_triangle_x(triangle& triangle, double angle, point3 center);
-void rotate_triangle_y(triangle& triangle, double angle, point3 center);
-void rotate_triangle_z(triangle& triangle, double angle, point3 center);
-
-void rotate_cube_x(scene_object& cube, double angle);
-void rotate_cube_y(scene_object& cube, double angle);
-void rotate_cube_z(scene_object& cube, double angle);
-
-void rotate_quad_x(scene_object& quad, double angle);
-void rotate_quad_y(scene_object& quad, double angle);
-void rotate_quad_z(scene_object& quad, double angle);
-
-double calculate_cube_area(const scene_object& cube);
-double calculate_quad_area(const scene_object& quad);
-
-bool sphere_contains_point(const scene_object& sphere, const point3& point);
-bool quad_contains_point(const scene_object& quad, const point3& point);
-bool cube_contains_point(const scene_object& cube, const point3& point);
-
-std::ostream& print_triangle(std::ostream& os, triangle triangle);
-std::ostream& print_cube(std::ostream& os, scene_object cube, point3 cube_center, double cube_size);
-std::ostream& print_asymmetric_cube(std::ostream& os, scene_object cube, point3 cube_center);

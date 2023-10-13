@@ -36,10 +36,22 @@
     <ClInclude Include="material.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="scene_util.h">
+    <ClInclude Include="scene_creation.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pdf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="post_processing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry_rotation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="geometry_util.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scene_population.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,10 +80,22 @@
     <ClCompile Include="material.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="scene_util.cpp">
+    <ClCompile Include="scene_creation.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pdf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="post_processing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry_rotation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="geometry_util.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="scene_population.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -9,10 +9,11 @@
 
 void create_image() {
 	// Common camera features for all scene configurations
-	// Scene-specific camera configurations are done in scene_util.cpp
+	// Scene-specific camera configurations are done in scene_creation.cpp
+	// All camera configurations can also be overwritten in scene_creation.cpp if you want to change samples per pixel etc.
 	camera cam;
 
-	cam.image_width = 1200;
+	cam.image_width = 600;
 	cam.samples_per_pixel = 100;
 	cam.max_depth = 10;
 
