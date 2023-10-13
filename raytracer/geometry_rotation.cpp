@@ -4,6 +4,7 @@
 
 // Rotation functions for polygons
 
+// Rotates a triangle around an arbitrary axis
 void rotate_triangle_around_axis(triangle& triangle, double angle, point3 center, glm::dvec3 axis) {
 	angle = glm::radians(angle); // Convert angle to radians
 
@@ -34,6 +35,7 @@ void rotate_triangle_y(triangle& triangle, double angle, point3 center) {
 	rotate_triangle_around_axis(triangle, angle, center, glm::dvec3(0.0, 1.0, 0.0));
 }
 
+// Rotates a triangle counter-clockwise along the positive z-axis
 void rotate_triangle_z(triangle& triangle, double angle, point3 center) {
 	rotate_triangle_around_axis(triangle, angle, center, glm::dvec3(0.0, 0.0, 1.0));
 }

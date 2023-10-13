@@ -39,6 +39,7 @@ double calculate_triangle_area(const triangle& triangle) {
 	return triangle_area;
 }
 
+// Use triangle area calculation on all triangles in the cube
 double calculate_cube_area(const scene_object& cube) {
 	double total_area = 0.0;
 
@@ -51,6 +52,7 @@ double calculate_cube_area(const scene_object& cube) {
 	return total_area;
 }
 
+// Use triangle area calculation on all triangles in the quad
 double calculate_quad_area(const scene_object& quad) {
 	double total_area = 0.0;
 
@@ -162,6 +164,7 @@ point3 get_random_point_on_sphere(point3 origin, const scene_object& sphere, con
 	return random_point;
 }
 
+// Get random parametrized point on a triangle
 point3 get_random_point_on_triangle(const triangle& random_triangle) {
 	std::random_device rd;
 	std::mt19937 gen(rd());

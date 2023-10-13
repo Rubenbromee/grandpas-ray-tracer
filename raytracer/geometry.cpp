@@ -372,6 +372,7 @@ bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 }
 
 // A constant density medium is both a geometry and a material, it firstly has a probabilistic geometry intersection based on density combined with a uniform scattering implemented in the material
+// The ray has a chance of intersecting a point within the boundrary geometry, depending on density
 bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object& constant_density_medium) {
 	hit_record rec_first_intersection, rec_second_intersection;
 

@@ -167,7 +167,7 @@ void create_scene_9(std::vector<scene_object>& scene_objects, camera& camera, co
 	add_lambertian_asymmetric_cube_to_scene(scene_objects, point3(1.0, 0.0, -1.0), 0.25, 0.5, 0.25, color(0.5, 0.5, 0.5), 45.0, 45.0, 45.0);
 }
 
-// Cornell box with sphere
+// Cornell box with dielectric sphere on ground to showcase basic caustics
 void create_scene_10(std::vector<scene_object>& scene_objects, camera& camera, color& background_color) {
 	camera.aspect_ratio = 1.0;
 	camera.look_from = point3(0.0, 0.0, -1.0);
@@ -183,8 +183,7 @@ void create_scene_10(std::vector<scene_object>& scene_objects, camera& camera, c
 	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
 	add_quad_light_to_scene(scene_objects, point3(-15.0, 49.9, -85.0), point3(15.0, 49.9, -85.0), point3(-15.0, 49.9, -115.0), point3(15.0, 49.9, -115.0), color(15.0, 15.0, 15.0)); // Light
 	
-	add_lambertian_sphere_to_scene(scene_objects, point3(0.0, -30.0, -100.0), 20.0);
-	// add_dielectric_sphere_to_scene(scene_objects, point3(0.0, -30.0, -100.0), 20.0, 1.5, true);
+	add_dielectric_sphere_to_scene(scene_objects, point3(0.0, -30.0, -100.0), 20.0, 1.5, true);
 }
 
 // Cornell box with multiple light geometries
@@ -305,7 +304,7 @@ void create_scene_16(std::vector<scene_object>& scene_objects, camera& camera, c
 	add_lambertian_quad_to_scene(scene_objects, point3(-50.0, 50.0, -50.0), point3(-50.0, 50.0, -150.0), point3(-50.0, -50.0, -50.0), point3(-50.0, -50.0, -150.0), color(0.12, 0.45, 0.15)); // Right wall (green)
 	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
 	add_quad_light_to_scene(scene_objects, point3(-15.0, 49.9, -85.0), point3(15.0, 49.9, -85.0), point3(-15.0, 49.9, -115.0), point3(15.0, 49.9, -115.0), color(8.0, 8.0, 8.0)); // Light
-	// Adjust densitys
+	
 	add_spherical_constant_density_medium_to_scene(scene_objects, point3(-15.0, 0.0, -100.0), 20.0, color(1.0, 0.0, 0.0), 0.03);
 	add_spherical_constant_density_medium_to_scene(scene_objects, point3(0.0, 0.0, -100.0), 20.0, color(0.0, 1.0, 0.0), 0.03);
 	add_spherical_constant_density_medium_to_scene(scene_objects, point3(15.0, 0.0, -100.0), 20.0, color(0.0, 0.0, 1.0), 0.03);
@@ -314,6 +313,6 @@ void create_scene_16(std::vector<scene_object>& scene_objects, camera& camera, c
 // Populate scene with geometries, change which scene is rendered here
 std::vector<scene_object> create_scene(camera& camera, color& background_color) {
 	std::vector<scene_object> scene_objects = std::vector<scene_object>();
-	create_scene_8(scene_objects, camera, background_color);
+	create_scene_10(scene_objects, camera, background_color);
 	return scene_objects;
 }
