@@ -20,5 +20,7 @@ void create_scene_12(std::vector<scene_object>& scene_objects, camera& camera, c
 void create_scene_13(std::vector<scene_object>& scene_objects, camera& camera, color& background_color);
 void create_scene_14(std::vector<scene_object>& scene_objects, camera& camera, color& background_color);
 void create_scene_15(std::vector<scene_object>& scene_objects, camera& camera, color& background_color);
+void create_scene_16(std::vector<scene_object>& scene_objects, camera& camera, color& background_color);
+void create_scene_17(std::vector<scene_object>& scene_objects, camera& camera, color& background_color);
 
 std::vector<scene_object> create_scene(camera& camera, color& background_color);

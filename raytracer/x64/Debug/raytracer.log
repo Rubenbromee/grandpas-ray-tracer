@@ -1,2 +1,3 @@
-﻿  scene_creation.cpp
+﻿  geometry.cpp
+C:\git repos\grandpas-ray-tracer\raytracer\geometry.cpp(463,23): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
   raytracer.vcxproj -> C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\raytracer.exe

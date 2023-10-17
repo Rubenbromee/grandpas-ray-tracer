@@ -219,7 +219,7 @@ void render(camera& camera) {
 	}
 	
 	// Log of image width taken from empirical tests
-	double sigma = glm::log(static_cast<double>(camera.image_width)) / 2.0;
+	double sigma = glm::log(static_cast<double>(camera.image_width));
 
 	// Kernel size formula from: https://medium.com/jun94-devpblog/cv-2-gaussian-and-median-filter-separable-2d-filter-2d11ee022c66
 	int kernel_size = 2 * static_cast<int>(glm::ceil(3.0 * sigma)) + 1;
