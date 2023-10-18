@@ -165,6 +165,9 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
 			}
 		break;
+		default:
+			return color(0.0, 0.0, 0.0);
+		break;
 	}
 }
 

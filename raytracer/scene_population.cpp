@@ -132,7 +132,7 @@ void add_quad_constant_density_medium_to_scene(std::vector<scene_object>& scene_
 void add_cubical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color, double density, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object cube = create_cube(center, size, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
 
-	rotate_polygon(cube, x_rotation, y_rotation, z_rotation);
+	// rotate_polygon(cube, x_rotation, y_rotation, z_rotation);
 
 	std::shared_ptr<scene_object> cube_ = std::make_shared<scene_object>(cube);
 	scene_object constant_density_medium = create_constant_density_medium(cube_, density, color);

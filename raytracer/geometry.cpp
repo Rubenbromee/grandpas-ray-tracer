@@ -371,6 +371,20 @@ bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 	return hit_triangle;
 }
 
+// Iterate through all triangles in the cube and run triangle intersection test
+bool cube_intersection_cdm(const ray& ray, interval ray_time, hit_record& rec, scene_object cube) {
+	bool hit_triangle = false;
+	for (int i = 0; i < cube.nr_cube_triangles; i++) {
+		const triangle triangle = cube.cube_triangles[i];
+		if (triangle_intersection(ray, ray_time, rec, triangle)) {
+			// Update the max-time in the interval to not hit far triangle if multiple are intersected
+			ray_time.max = rec.time;
+			hit_triangle = true;
+		}
+	}
+	return hit_triangle;
+}
+
 // A constant density medium is both a geometry and a material, it firstly has a probabilistic geometry intersection based on density combined with a uniform scattering implemented in the material
 // The ray has a chance of intersecting a point within the boundrary geometry, depending on density
 bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object& constant_density_medium) {
@@ -394,10 +408,12 @@ bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, 
 			}
 		break;
 		case CUBE:
-			if (!cube_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
+			if (!cube_intersection_cdm(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
+				// std::cout << "No first intersection" << std::endl;
 				return false;
 			}
-			if (!cube_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
+			if (!cube_intersection_cdm(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
+				// std::cout << "No second intersection" << std::endl;
 				return false;
 			}
 		break;
@@ -503,6 +519,9 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 					local_ray_time_interval.max = temp_rec.time;
 					update_hit_record(temp_rec, obj, rec);
 				}
+			break;
+			default:
+				return false;
 			break;
 		}
 	}
