@@ -81,7 +81,7 @@ bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, con
 bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, const triangle& triangle);
 bool quad_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& quad);
 bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& cube);
-bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object& constant_density_medium);
+bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object constant_density_medium);
 
 // Scene intersection function
 bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects);
