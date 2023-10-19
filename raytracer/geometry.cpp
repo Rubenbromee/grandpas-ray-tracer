@@ -121,6 +121,7 @@ scene_object create_cube(point3 center, double size, material_enum material, col
 	// Geometric properties
 	cube.object_type = CUBE;
 	cube.cube_center = center;
+	cube.cube_size = size;
 
 	double half = size * 0.5;
 
@@ -236,17 +237,6 @@ scene_object create_asymmetric_cube(point3 center, double width, double height, 
 	return asymmetric_cube;
 }
 
-// Rewrite the way it's created, copy every attr from boundrary volume to cdm, set object type to boundrary volumes object type, maybe bool for if it is a cdm?
-scene_object create_constant_density_medium(std::shared_ptr<scene_object> boundrary_volume, double density, color color) {
-	scene_object constant_density_medium;
-	constant_density_medium.object_type = CONSTANT_DENSITY_MEDIUM;
-	constant_density_medium.material = CONSTANT_DENSITY_MEDIUM_MATERIAL;
-	constant_density_medium.boundrary_volume = boundrary_volume;
-	constant_density_medium.density = density;
-	constant_density_medium.material_color = color;
-	return constant_density_medium;
-}
-
 // Sphere intersection is calculated as intersection with an implicit surface
 bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& sphere) {
 	const glm::dvec3& ray_direction = ray.direction;
@@ -287,18 +277,20 @@ bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, con
 }
 
 // Triangle intersection calculation using Möller–Trumbore algorithm
-bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, const triangle& triangle) {
+bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, const triangle& triangle, bool allow_internal_intersection) {
 	const glm::dvec3& a = triangle.vertices[0];
 	const glm::dvec3& b = triangle.vertices[1];
 	const glm::dvec3& c = triangle.vertices[2];
 	const glm::dvec3& n = triangle.normal;
+
+	const glm::dvec3 norm_dir = glm::normalize(ray.direction);
 
 	// Calculate the edge vectors
 	glm::dvec3 e1 = b - a;
 	glm::dvec3 e2 = c - a;
 
 	// Calculate the determinant
-	glm::dvec3 h = glm::cross(ray.direction, e2);
+	glm::dvec3 h = glm::cross(norm_dir, e2);
 	double det = glm::dot(e1, h);
 
 	// Check if the ray and triangle are roughly parallel (no intersection or infinite intersections)
@@ -321,7 +313,7 @@ bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, c
 
 	// Calculate q and v parameter
 	glm::dvec3 q = glm::cross(t, e1);
-	double v = glm::dot(ray.direction, q) * inv_det;
+	double v = glm::dot(norm_dir, q) * inv_det;
 
 	// Check if v is out of range [0, 1] or if u + v is greater than 1
 	if (v < 0.0 || u + v > 1.0) {
@@ -332,15 +324,20 @@ bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, c
 	double time = glm::dot(e2, q) * inv_det;
 
 	// Make sure ray is hitting from outside the cube
-	double dot = glm::dot(ray.direction, n);
+	double dot = glm::dot(norm_dir, n);
+
+	if (allow_internal_intersection ) {
+		dot = -1.0;
+	}
 
 	// Check if t is positive (intersection in front of ray origin) and ray is hitting face from the outside
 	// Also check that triangle is closest triangle
 	if (time > 0.0 && dot < 0.0 && surrounds(ray_time, time)) {
-		rec.point = ray.origin + time * ray.direction;
+		rec.point = ray.origin + time * norm_dir;
 		rec.time = time;
 		rec.normal = n;
 		set_face_normal(ray, n, rec);
+		
 		return true;
 	}
 
@@ -372,61 +369,70 @@ bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 	return hit_triangle;
 }
 
+bool cube_intersection_allow_internal(const ray& ray, interval ray_time, hit_record& rec, const scene_object& cube) {
+	bool hit_triangle = false;
+	for (int i = 0; i < cube.nr_cube_triangles; i++) {
+		const triangle& triangle = cube.cube_triangles[i];
+		if (triangle_intersection(ray, ray_time, rec, triangle, true)) {
+			// Update the max-time in the interval to not hit far triangle if multiple are intersected
+			ray_time.max = rec.time;
+			hit_triangle = true;
+		}
+	}
+	return hit_triangle;
+}
+
 // A constant density medium is both a geometry and a material, it firstly has a probabilistic geometry intersection based on density combined with a uniform scattering implemented in the material
 // The ray has a chance of intersecting a point within the boundrary geometry, depending on density
-bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object constant_density_medium) {
+bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object& constant_density_medium) {
 	hit_record rec_first_intersection, rec_second_intersection;
 
-	if (!constant_density_medium.boundrary_volume->cube_triangles) {
-		std::cout << "Boundrary volume nullptr!" << std::endl;
-	}
-
-	switch (constant_density_medium.boundrary_volume->object_type) {
+	switch (constant_density_medium.object_type) {
 		case SPHERE:
-			if (!sphere_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
+			if (!sphere_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, constant_density_medium)) {
 				return false;
 			}
-			if (!sphere_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
+			if (!sphere_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, constant_density_medium)) {
 				return false;
 			}
 		break;
 		case QUAD:
-			if (!quad_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
+			if (!quad_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, constant_density_medium)) {
 				return false;
 			}
-			if (!quad_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
+			if (!quad_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, constant_density_medium)) {
 				return false;
 			}
 		break;
 		case CUBE:
-			if (!cube_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
-				// std::cout << "No first intersection" << std::endl;
+			if (!cube_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, constant_density_medium)) {
 				return false;
 			}
-			if (!cube_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
-				// std::cout << "No second intersection" << std::endl;
+			// cube_second_intersection = create_cube(constant_density_medium.cube_center, -constant_density_medium.cube_size, constant_density_medium.material, constant_density_medium.material_color);
+			// ray ray_second_intersection = create_ray(ray_at(ray_in, infinity), -ray_in.direction);
+			if (!cube_intersection_allow_internal(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, constant_density_medium)) {
 				return false;
 			}
 		break;
 		case ASYMMETRIC_CUBE:
-			if (!cube_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, *constant_density_medium.boundrary_volume)) {
+			if (!cube_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, constant_density_medium)) {
 				return false;
 			}
-			if (!cube_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, *constant_density_medium.boundrary_volume)) {
+			if (!cube_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, constant_density_medium)) {
 				return false;
 			}
 		break;
 	}
 
-	rec_first_intersection.material = constant_density_medium.boundrary_volume->material;
-	rec_first_intersection.material_color = constant_density_medium.boundrary_volume->material_color;
-	rec_first_intersection.metal_fuzz = constant_density_medium.boundrary_volume->metal_fuzz;
-	rec_first_intersection.refraction_index = constant_density_medium.boundrary_volume->refraction_index;
+	rec_first_intersection.material = constant_density_medium.material;
+	rec_first_intersection.material_color = constant_density_medium.material_color;
+	rec_first_intersection.metal_fuzz = constant_density_medium.metal_fuzz;
+	rec_first_intersection.refraction_index = constant_density_medium.refraction_index;
 
-	rec_second_intersection.material = constant_density_medium.boundrary_volume->material;
-	rec_second_intersection.material_color = constant_density_medium.boundrary_volume->material_color;
-	rec_second_intersection.metal_fuzz = constant_density_medium.boundrary_volume->metal_fuzz;
-	rec_second_intersection.refraction_index = constant_density_medium.boundrary_volume->refraction_index;
+	rec_second_intersection.material = constant_density_medium.material;
+	rec_second_intersection.material_color = constant_density_medium.material_color;
+	rec_second_intersection.metal_fuzz = constant_density_medium.metal_fuzz;
+	rec_second_intersection.refraction_index = constant_density_medium.refraction_index;
 
 	color color = rec_first_intersection.material_color;
 
@@ -475,45 +481,47 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 	for (int i = 0; i < nr_scene_objects; i++) {
 		const scene_object& obj = scene_objects[i];
 
-		switch (obj.object_type) {
-			case SPHERE:
-				if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-			case QUAD:
-				if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-			case CUBE:
-				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-			case ASYMMETRIC_CUBE:
-				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-			case CONSTANT_DENSITY_MEDIUM:
-				if (constant_density_medium_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-					hit_anything = true;
-					local_ray_time_interval.max = temp_rec.time;
-					update_hit_record(temp_rec, obj, rec);
-				}
-			break;
-			default:
-				return false;
-			break;
+		if (obj.constant_density_medium == true) {
+			if (constant_density_medium_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+				hit_anything = true;
+				local_ray_time_interval.max = temp_rec.time;
+				update_hit_record(temp_rec, obj, rec);
+			}
+		}
+		else {
+			switch (obj.object_type) {
+				case SPHERE:
+					if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+						hit_anything = true;
+						local_ray_time_interval.max = temp_rec.time;
+						update_hit_record(temp_rec, obj, rec);
+					}
+				break;
+				case QUAD:
+					if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+						hit_anything = true;
+						local_ray_time_interval.max = temp_rec.time;
+						update_hit_record(temp_rec, obj, rec);
+					}
+				break;
+				case CUBE:
+					if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+						hit_anything = true;
+						local_ray_time_interval.max = temp_rec.time;
+						update_hit_record(temp_rec, obj, rec);
+					}
+				break;
+				case ASYMMETRIC_CUBE:
+					if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+						hit_anything = true;
+						local_ray_time_interval.max = temp_rec.time;
+						update_hit_record(temp_rec, obj, rec);
+					}
+				break;
+				default:
+					return false;
+				break;
+			}
 		}
 	}
 

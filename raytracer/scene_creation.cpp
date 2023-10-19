@@ -332,7 +332,8 @@ void create_scene_17(std::vector<scene_object>& scene_objects, camera& camera, c
 
 	// add_quad_constant_density_medium_to_scene(scene_objects, point3(-10.0, 10.0, -100.0), point3(10.0, 10.0, -100.0), point3(-10.0, -10.0, -100.0), point3(10.0, -10.0, -100.0), color(1.0, 0.0, 0.0), 0.03);
 	// add_quad_constant_density_medium_to_scene(scene_objects, point3(-10.0, 10.0, -100.0), point3(10.0, 10.0, -100.0), point3(-10.0, -10.0, -100.0), point3(10.0, -10.0, -100.0), color(0.0, 0.0, 1.0), 0.03, 45.0, -45.0);
-	add_cubical_constant_density_medium_to_scene(scene_objects, point3(0.0, 25.0, -100.0), 15.0, color(1.0, 0.4980, 0.3137), 0.03);
+	add_cubical_constant_density_medium_to_scene(scene_objects, point3(0.0, 25.0, -100.0), 15.0, color(1.0, 0.4980, 0.3137), 0.01);
+	// add_spherical_constant_density_medium_to_scene(scene_objects, point3(0.0, 25.0, -100.0), 10.0, color(1.0, 0.4980, 0.3137), 0.03);
 	// add_lambertian_cube_to_scene(scene_objects, point3(0.0, 25.0, -100.0), 15.0, color(1.0, 0.4980, 0.3137));
 	// add_asymmetric_cubical_constant_density_medium_to_scene(scene_objects, point3(0.0, -25.0, -100.0), 5.0, 15.0, 5.0, color(1.0, 0.4118, 0.7059), 0.03, {}, {}, 90.0);
 }

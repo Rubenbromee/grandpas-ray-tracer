@@ -62,10 +62,11 @@ struct scene_object {
 	triangle cube_triangles[12];
 	point3 cube_center;
 	double cube_area;
+	double cube_size;
 
 	// Constant density medium fields, probabilistic density
+	bool constant_density_medium = false;
 	double density;
-	std::shared_ptr<scene_object> boundrary_volume;
 };
 
 // Geometry creation functions
@@ -74,14 +75,13 @@ scene_object create_quad(point3 top_left, point3 top_right, point3 bottom_left, 
 scene_object create_quad(point3 center, double width, double height, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 scene_object create_cube(point3 center, double size, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
 scene_object create_asymmetric_cube(point3 center, double width, double height, double depth, material_enum material = LAMBERTIAN, color color = glm::dvec3(0.5, 0.5, 0.5), double metal_fuzz = 1.0, double refraction_index = 1.0);
-scene_object create_constant_density_medium(std::shared_ptr<scene_object> boundrary_volume, double density = 0.01, color color = glm::dvec3(0.5, 0.5, 0.5));
 
 // Geometry intersection functions
 bool sphere_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& sphere);
-bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, const triangle& triangle);
+bool triangle_intersection(const ray& ray, interval ray_time, hit_record& rec, const triangle& triangle, bool allow_internal_intersection = false);
 bool quad_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& quad);
 bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const scene_object& cube);
-bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object constant_density_medium);
+bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, hit_record& rec, const scene_object& constant_density_medium);
 
 // Scene intersection function
 bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects);

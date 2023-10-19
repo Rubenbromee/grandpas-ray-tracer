@@ -111,42 +111,38 @@ void add_asymmetric_cube_light_to_scene(std::vector<scene_object>& scene_objects
 
 void add_spherical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double radius, color color, double density) {
 	scene_object sphere = create_sphere(center, radius, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
-	std::shared_ptr<scene_object> sphere_ = std::make_shared<scene_object>(sphere);
+	sphere.constant_density_medium = true;
+	sphere.density = density;
 
-	scene_object constant_density_medium = create_constant_density_medium(sphere_, density, color);
-
-	scene_objects.push_back(constant_density_medium);
+	scene_objects.push_back(sphere);
 }
 
 void add_quad_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color color, double density, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object quad = create_quad(top_left, top_right, bottom_left, bottom_right, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
+	quad.constant_density_medium = true;
+	quad.density = density;
 
 	rotate_polygon(quad, x_rotation, y_rotation, z_rotation);
 
-	std::shared_ptr<scene_object> quad_ = std::make_shared<scene_object>(quad);
-	scene_object constant_density_medium = create_constant_density_medium(quad_, density, color);
-
-	scene_objects.push_back(constant_density_medium);
+	scene_objects.push_back(quad);
 }
 
 void add_cubical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color, double density, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object cube = create_cube(center, size, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
+	cube.constant_density_medium = true;
+	cube.density = density;
 
-	// rotate_polygon(cube, x_rotation, y_rotation, z_rotation);
+	rotate_polygon(cube, x_rotation, y_rotation, z_rotation);
 
-	std::shared_ptr<scene_object> cube_ = std::make_shared<scene_object>(cube);
-	scene_object constant_density_medium = create_constant_density_medium(cube_, density, color);
-
-	scene_objects.push_back(constant_density_medium);
+	scene_objects.push_back(cube);
 }
 
 void add_asymmetric_cubical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double width, double height, double depth, color color, double density, double x_rotation, double y_rotation, double z_rotation) {
 	scene_object cube = create_asymmetric_cube(center, width, height, depth, CONSTANT_DENSITY_MEDIUM_MATERIAL, color);
+	cube.constant_density_medium = true;
+	cube.density = density;
 
 	rotate_polygon(cube, x_rotation, y_rotation, z_rotation);
 
-	std::shared_ptr<scene_object> cube_ = std::make_shared<scene_object>(cube);
-	scene_object constant_density_medium = create_constant_density_medium(cube_, density, color);
-
-	scene_objects.push_back(constant_density_medium);
+	scene_objects.push_back(cube);
 }
