@@ -1,7 +1,2 @@
-﻿  geometry.cpp
-C:\git repos\grandpas-ray-tracer\raytracer\geometry.cpp(475,23): warning C4267: 'initializing': conversion from 'size_t' to 'int', possible loss of data
-  geometry_rotation.cpp
-  util.cpp
-C:\git repos\grandpas-ray-tracer\raytracer\util.cpp(22,17): warning C4267: 'argument': conversion from 'size_t' to 'unsigned int', possible loss of data
-  Generating Code...
+﻿  material.cpp
   raytracer.vcxproj -> C:\git repos\grandpas-ray-tracer\raytracer\x64\Debug\raytracer.exe

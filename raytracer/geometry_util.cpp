@@ -21,6 +21,13 @@ void update_hit_record(hit_record& temp_rec, const scene_object& obj, hit_record
 	temp_rec.metal_fuzz = obj.metal_fuzz;
 	temp_rec.refraction_index = obj.refraction_index;
 
+	if (obj.constant_density_medium) {
+		temp_rec.hit_constant_density_medium = true;
+	}
+	else {
+		temp_rec.hit_constant_density_medium = false;
+	}
+
 	rec = temp_rec;
 }
 
@@ -201,7 +208,7 @@ point3 get_random_point_on_quad(point3 origin, const scene_object& quad) {
 }
 
 // Used for sampling cubical geometries
-point3 get_random_point_on_cube(point3 origin, const scene_object& cube, const std::vector<scene_object>& scene_objects) {
+point3 get_random_point_on_cube(point3 origin, const scene_object& cube, const std::vector<scene_object>& scene_objects, bool ignore_reflection, glm::dvec3 triangle_normal) {
 	std::random_device rd;
 	std::mt19937 gen(rd());
 
@@ -211,8 +218,13 @@ point3 get_random_point_on_cube(point3 origin, const scene_object& cube, const s
 
 	// Choose a random triangle
 	const triangle& random_triangle = cube.cube_triangles[random_triangle_index];
+	triangle_normal = random_triangle.normal;
 
 	point3 random_point_on_cube = get_random_point_on_triangle(random_triangle);
+
+	if (ignore_reflection) {
+		return random_point_on_cube;
+	}
 
 	glm::dvec3 vector_to_random_point = random_point_on_cube - origin;
 

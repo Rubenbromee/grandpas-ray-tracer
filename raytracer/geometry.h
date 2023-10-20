@@ -17,6 +17,7 @@ struct hit_record {
 	double refraction_index;
 	double time;
 	bool outward_face;
+	bool hit_constant_density_medium;
 };
 
 // Triangles have counter-clockwise/right-hand rule, for normals
@@ -85,3 +86,4 @@ bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, 
 
 // Scene intersection function
 bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects);
+scene_object find_intersection_return_scene_object(const ray& ray, interval initial_ray_time_interval, hit_record& rec, const std::vector<scene_object>& scene_objects, bool& hit_anything);

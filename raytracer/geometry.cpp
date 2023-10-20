@@ -407,9 +407,8 @@ bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, 
 		case CUBE:
 			if (!cube_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, constant_density_medium)) {
 				return false;
+				
 			}
-			// cube_second_intersection = create_cube(constant_density_medium.cube_center, -constant_density_medium.cube_size, constant_density_medium.material, constant_density_medium.material_color);
-			// ray ray_second_intersection = create_ray(ray_at(ray_in, infinity), -ray_in.direction);
 			if (!cube_intersection_allow_internal(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, constant_density_medium)) {
 				return false;
 			}
@@ -463,7 +462,7 @@ bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, 
 	rec.time = rec_first_intersection.time + (hit_distance / ray_length);
 	rec.point = ray_at(ray_in, rec.time);
 
-	rec.normal = glm::dvec3(1.0, 0.0, 0.0);
+	rec.normal = glm::normalize(random_hemispherical_direction(glm::dvec3(1.0, 0.0, 0.0)));
 	rec.outward_face = true;
 	rec.material_color = color;
 
@@ -481,7 +480,7 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 	for (int i = 0; i < nr_scene_objects; i++) {
 		const scene_object& obj = scene_objects[i];
 
-		if (obj.constant_density_medium == true) {
+		if (obj.constant_density_medium == true && !rec.hit_constant_density_medium) {
 			if (constant_density_medium_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
 				hit_anything = true;
 				local_ray_time_interval.max = temp_rec.time;

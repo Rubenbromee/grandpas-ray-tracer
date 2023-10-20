@@ -5,6 +5,7 @@
 #include "geometry.h"
 #include "camera.h"
 #include "pdf.h"
+#include "geometry_util.h"
 
 // Uniform lambertian scattering
 bool lambertian_scatter(const ray& ray_in, const hit_record& rec, color& attenuation, ray& scattered_ray, double& pdf) {
