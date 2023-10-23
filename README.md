@@ -61,6 +61,7 @@ To select which scene is rendered, change the function call in scene_creation.cp
 - Procedural materials
 - Benchmark performance compared to traditional object oriented ray tracer
 - Fix hacky solution to cubical constant density volumes
+- Jitter parameter for constant density volumes to create irregular shapes
   
 ## What I've learned
 - There is definitely a use case for abstract classes and polymorphism. I noticed pretty quickly that, for example, tight coupling between materials and geometries led to repeated code and further expansion of materials and geometries would probably become difficult and confusing.
