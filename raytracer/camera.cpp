@@ -98,7 +98,7 @@ const ray& get_multisample_ray(int i, int j, const camera& camera) {
 }
 
 // Calculate color for current ray
-color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& scene_objects, const color& background_color, const std::vector<scene_object>& sample_objects) {
+color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& scene_objects, const color& background_color, const std::vector<scene_object>& sample_objects, const camera& camera) {
 	hit_record rec;
 	interval initial_ray_time_interval = { 0.001, infinity };
 
@@ -144,25 +144,25 @@ color ray_color(const ray& ray_in, int depth, const std::vector<scene_object>& s
 				}
 
 				return attenuation * lambertian_scatter_pdf(ray_in, rec, scattered_ray) *
-					ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects) / pdf;
+					ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects, camera) / pdf;
 			}
 		break;
 		case METAL:
 			if (metallic_reflection(ray_in, rec, attenuation, scattered_ray, rec.metal_fuzz)) {
-				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
+				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects, camera);
 			}
 		break;
 		case DIELECTRIC:
 			if (dielectric_refraction(ray_in, rec, attenuation, scattered_ray, rec.refraction_index)) {
-				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
+				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects, camera);
 			}
 		break;
 		case LIGHT:
 			return rec.material_color;
 		break;
 		case CONSTANT_DENSITY_MEDIUM_MATERIAL:
-			if (constant_density_medium_scatter(rec, attenuation, scattered_ray)) {
-				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects);
+			if (constant_density_medium_scatter(rec, attenuation, scattered_ray, camera)) {
+				return attenuation * ray_color(scattered_ray, (depth - 1), scene_objects, background_color, sample_objects, camera);
 			}
 		break;
 		default:
@@ -208,7 +208,7 @@ void render(camera& camera) {
 				// Multi-sample a pixel
 				for (int sample = 0; sample < camera.samples_per_pixel; sample++) {
 					const ray& ray = get_multisample_ray(i, j, camera);
-					pixel_colors[i][j] += ray_color(ray, camera.max_depth, scene_objects, background_color, sample_objects);
+					pixel_colors[i][j] += ray_color(ray, camera.max_depth, scene_objects, background_color, sample_objects, camera);
 				}
 			}));
 		}

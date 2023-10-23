@@ -74,8 +74,11 @@ bool dielectric_refraction(const ray& ray_in, const hit_record& rec, color& atte
 }
 
 // When a constant density medium is intersected, give the point the color of the geometry and randomly scatter the ray at the geometrical intersection point
-bool constant_density_medium_scatter(const hit_record& rec, color& attenuation, ray& ray_out) {
-	ray_out = create_ray(rec.point, glm::normalize(random_hemispherical_direction(rec.normal)));
+bool constant_density_medium_scatter(const hit_record& rec, color& attenuation, ray& ray_out, const camera& camera) {
+	// So, this solution is definetly hacky but when I use rec.point as origin point for the ray, internal collison occurs with the boundrary volume
+	// I don't know what causes this and I hope to fix it in the future but for now this seems to work and isn't a hardcoded value
+	ray_out = create_ray(camera.look_at, glm::normalize(random_hemispherical_direction(rec.normal)));
+	
 	attenuation = rec.material_color;
 	return true;
 }

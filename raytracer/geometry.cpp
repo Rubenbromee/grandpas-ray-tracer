@@ -369,6 +369,8 @@ bool cube_intersection(const ray& ray, interval ray_time, hit_record& rec, const
 	return hit_triangle;
 }
 
+// Needed to be able to intersect a cubical constant density medium internally
+// This is needed to get the second intersection point used in the constant density medium intersection function
 bool cube_intersection_allow_internal(const ray& ray, interval ray_time, hit_record& rec, const scene_object& cube) {
 	bool hit_triangle = false;
 	for (int i = 0; i < cube.nr_cube_triangles; i++) {
@@ -417,7 +419,7 @@ bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, 
 			if (!cube_intersection(ray_in, interval{ -infinity, infinity }, rec_first_intersection, constant_density_medium)) {
 				return false;
 			}
-			if (!cube_intersection(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, constant_density_medium)) {
+			if (!cube_intersection_allow_internal(ray_in, interval{ rec_first_intersection.time + 0.0001, infinity }, rec_second_intersection, constant_density_medium)) {
 				return false;
 			}
 		break;
@@ -462,7 +464,7 @@ bool constant_density_medium_intersection(const ray& ray_in, interval ray_time, 
 	rec.time = rec_first_intersection.time + (hit_distance / ray_length);
 	rec.point = ray_at(ray_in, rec.time);
 
-	rec.normal = glm::normalize(random_hemispherical_direction(glm::dvec3(1.0, 0.0, 0.0)));
+	rec.normal = glm::dvec3(0.0, 0.0, 1.0);
 	rec.outward_face = true;
 	rec.material_color = color;
 
@@ -480,7 +482,8 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 	for (int i = 0; i < nr_scene_objects; i++) {
 		const scene_object& obj = scene_objects[i];
 
-		if (obj.constant_density_medium == true && !rec.hit_constant_density_medium) {
+		// Special case for constant density mediums since they are both a geometry and a material
+		if (obj.constant_density_medium == true) {
 			if (constant_density_medium_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
 				hit_anything = true;
 				local_ray_time_interval.max = temp_rec.time;
@@ -489,36 +492,36 @@ bool find_intersection(const ray& ray, interval initial_ray_time_interval, hit_r
 		}
 		else {
 			switch (obj.object_type) {
-				case SPHERE:
-					if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-						hit_anything = true;
-						local_ray_time_interval.max = temp_rec.time;
-						update_hit_record(temp_rec, obj, rec);
-					}
+			case SPHERE:
+				if (sphere_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 				break;
-				case QUAD:
-					if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-						hit_anything = true;
-						local_ray_time_interval.max = temp_rec.time;
-						update_hit_record(temp_rec, obj, rec);
-					}
+			case QUAD:
+				if (quad_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 				break;
-				case CUBE:
-					if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-						hit_anything = true;
-						local_ray_time_interval.max = temp_rec.time;
-						update_hit_record(temp_rec, obj, rec);
-					}
+			case CUBE:
+				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 				break;
-				case ASYMMETRIC_CUBE:
-					if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
-						hit_anything = true;
-						local_ray_time_interval.max = temp_rec.time;
-						update_hit_record(temp_rec, obj, rec);
-					}
+			case ASYMMETRIC_CUBE:
+				if (cube_intersection(ray, local_ray_time_interval, temp_rec, obj)) {
+					hit_anything = true;
+					local_ray_time_interval.max = temp_rec.time;
+					update_hit_record(temp_rec, obj, rec);
+				}
 				break;
-				default:
-					return false;
+			default:
+				return false;
 				break;
 			}
 		}

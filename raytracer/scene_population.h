@@ -25,6 +25,5 @@ void add_asymmetric_cube_light_to_scene(std::vector<scene_object>& scene_objects
 void add_cube_light_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color = glm::dvec3(4.0, 4.0, 4.0), double x_rotation = 0.0, double y_rotation = 0.0, double z_rotation = 0.0);
 
 void add_spherical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double radius, color color = glm::dvec3(0.5, 0.5, 0.5), double density = 1.0);
-void add_quad_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 top_left, point3 top_right, point3 bottom_left, point3 bottom_right, color color = glm::dvec3(0.5, 0.5, 0.5), double density = 1.0, double x_rotation = 0.0, double y_rotation = 0.0, double z_rotation = 0.0);
 void add_cubical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double size, color color = glm::dvec3(0.5, 0.5, 0.5), double density = 1.0, double x_rotation = 0.0, double y_rotation = 0.0, double z_rotation = 0.0);
 void add_asymmetric_cubical_constant_density_medium_to_scene(std::vector<scene_object>& scene_objects, point3 center, double width, double height, double depth, color color = glm::dvec3(0.5, 0.5, 0.5), double density = 1.0, double x_rotation = 0.0, double y_rotation = 0.0, double z_rotation = 0.0);
