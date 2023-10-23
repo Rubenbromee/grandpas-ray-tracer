@@ -330,16 +330,15 @@ void create_scene_17(std::vector<scene_object>& scene_objects, camera& camera, c
 	add_lambertian_quad_to_scene(scene_objects, point3(50.0, 50.0, -150.0), point3(50.0, 50.0, -50.0), point3(50.0, -50.0, -150.0), point3(50.0, -50.0, -50.0), color(0.65, 0.05, 0.05)); // Left wall (red)
 	add_quad_light_to_scene(scene_objects, point3(-15.0, 49.9, -85.0), point3(15.0, 49.9, -85.0), point3(-15.0, 49.9, -115.0), point3(15.0, 49.9, -115.0), color(15.0, 15.0, 15.0)); // Light
 
-	// add_quad_constant_density_medium_to_scene(scene_objects, point3(-10.0, 10.0, -100.0), point3(10.0, 10.0, -100.0), point3(-10.0, -10.0, -100.0), point3(10.0, -10.0, -100.0), color(1.0, 0.0, 0.0), 0.03);
-	// add_quad_constant_density_medium_to_scene(scene_objects, point3(-10.0, 10.0, -100.0), point3(10.0, 10.0, -100.0), point3(-10.0, -10.0, -100.0), point3(10.0, -10.0, -100.0), color(0.0, 0.0, 1.0), 0.03, 45.0, -45.0);
-	add_cubical_constant_density_medium_to_scene(scene_objects, point3(0.0, 25.0, -100.0), 15.0, color(1.0, 0.4980, 0.3137), 0.03);
-	// add_lambertian_cube_to_scene(scene_objects, point3(0.0, 25.0, -100.0), 15.0, color(1.0, 0.4980, 0.3137));
-	// add_asymmetric_cubical_constant_density_medium_to_scene(scene_objects, point3(0.0, -25.0, -100.0), 5.0, 15.0, 5.0, color(1.0, 0.4118, 0.7059), 0.03, {}, {}, 90.0);
+	add_cubical_constant_density_medium_to_scene(scene_objects, point3(0.0, 25.0, -100.0), 15.0, color(1.0, 0.4980, 0.3137), 0.015);
+	add_asymmetric_cubical_constant_density_medium_to_scene(scene_objects, point3(0.0, 0.0, -100.0), 20.0, 20.0, 3.0, color(1.0, 0.0, 0.0), 0.015, 45.0, 45.0);
+	add_asymmetric_cubical_constant_density_medium_to_scene(scene_objects, point3(0.0, 0.0, -100.0), 20.0, 20.0, 3.0, color(0.0, 1.0, 0.0), 0.015, 45.0, -45.0);
+	add_asymmetric_cubical_constant_density_medium_to_scene(scene_objects, point3(0.0, -25.0, -100.0), 5.0, 15.0, 5.0, color(1.0, 0.4118, 0.7059), 0.015, {}, {}, 90.0);
 }
 
 // Populate scene with geometries, change which scene is rendered here
 std::vector<scene_object> create_scene(camera& camera, color& background_color) {
 	std::vector<scene_object> scene_objects = std::vector<scene_object>();
-	create_scene_17(scene_objects, camera, background_color);
+	create_scene_5(scene_objects, camera, background_color);
 	return scene_objects;
 }
