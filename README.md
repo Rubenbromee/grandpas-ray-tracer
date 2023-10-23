@@ -95,8 +95,8 @@ Render time: 00:31:47
 ![alt](https://i.imgur.com/9hH7a3N.png)
 Render time: 00:47:52
 
+![alt](https://i.imgur.com/nbFkDGX.png)
+Render time: 00:48:21
+
 ![alt](https://i.imgur.com/q1D5X5W.png)
 Render time: 02:09:14
-
-![alt](https://i.imgur.com/fhPqsUZ.png)
-Render time: 00:07:36
