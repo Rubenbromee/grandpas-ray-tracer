@@ -60,6 +60,7 @@ To select which scene is rendered, change the function call in scene_creation.cp
 - Bounding volume hierarchy
 - Procedural materials
 - Benchmark performance compared to traditional object oriented ray tracer
+- Fix hacky solution to cubical constant density volumes
   
 ## What I've learned
 - There is definitely a use case for abstract classes and polymorphism. I noticed pretty quickly that, for example, tight coupling between materials and geometries led to repeated code and further expansion of materials and geometries would probably become difficult and confusing.
@@ -68,16 +69,34 @@ To select which scene is rendered, change the function call in scene_creation.cp
 - Gaussian filtering is a useful method to achieve a similar effect to multi-sampling while using less computational resources. Obviously there has to be a balance between actual multi-sampling and gaussian filtering but it allows for using few samples per pixel and achieving an adequate result.
 
 ## Images
-All images were rendered on a laptop on a AMD Ryzen 7 5800U with Radeon Graphics (1.90 GHz).
+All images were rendered on a laptop on a AMD Ryzen 7 5800U with Radeon Graphics (1.90 GHz). All rendered images used 1200 pixels image width, 250 samples per pixel and 10 max depth.
 
-![alt](https://i.imgur.com/EpoUfYK.png)
-Render time: 00:17:40
+![alt](https://i.imgur.com/fhPqsUZ.png)
+Render time: 00:07:36
 
-![alt](https://i.imgur.com/sj2nBBe.png)
-Render time: 00:15:53
+![alt](https://i.imgur.com/gcfvKLy.png)
+Render time: 00:11:58
 
-![alt](https://i.imgur.com/bRj6NUR.png)
-Render time: 00:11:14
+![alt](https://i.imgur.com/7p23rSo.png)
+Render time: 00:22:06
 
-![alt](https://i.imgur.com/A9MjbiU.png)
-Render time: 00:03:53
+![alt](https://i.imgur.com/IaVUHBw.png)
+Render time: 00:24:31
+
+![alt](https://i.imgur.com/rbu0e3S.png)
+Render time: 00:26:30
+
+![alt](https://i.imgur.com/vjcwDH3.png)
+Render time: 00:28:20
+
+![alt](https://i.imgur.com/e2uDPRh.png)
+Render time: 00:31:47
+
+![alt](https://i.imgur.com/9hH7a3N.png)
+Render time: 00:47:52
+
+![alt](https://i.imgur.com/q1D5X5W.png)
+Render time: 02:09:14
+
+![alt](https://i.imgur.com/fhPqsUZ.png)
+Render time: 00:07:36
